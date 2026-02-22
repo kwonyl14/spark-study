@@ -3,16 +3,898 @@
 <head>
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.9.2">
-<title data-rh="true">Blog | My Site</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://kwonyl14.github.io/spark-study/img/docusaurus-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://kwonyl14.github.io/spark-study/img/docusaurus-social-card.jpg"><meta data-rh="true" property="og:url" content="https://kwonyl14.github.io/spark-study/blog"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" property="og:title" content="Blog | My Site"><meta data-rh="true" name="description" content="Blog"><meta data-rh="true" property="og:description" content="Blog"><meta data-rh="true" name="docusaurus_tag" content="blog_posts_list"><meta data-rh="true" name="docsearch:docusaurus_tag" content="blog_posts_list"><link data-rh="true" rel="icon" href="/spark-study/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://kwonyl14.github.io/spark-study/blog"><link data-rh="true" rel="alternate" href="https://kwonyl14.github.io/spark-study/blog" hreflang="en"><link data-rh="true" rel="alternate" href="https://kwonyl14.github.io/spark-study/blog" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"Blog","@id":"https://kwonyl14.github.io/spark-study/blog","mainEntityOfPage":"https://kwonyl14.github.io/spark-study/blog","headline":"Blog","description":"Blog","blogPost":[{"@type":"BlogPosting","@id":"https://kwonyl14.github.io/spark-study/blog/week-1-caching-vs-checkpointing","mainEntityOfPage":"https://kwonyl14.github.io/spark-study/blog/week-1-caching-vs-checkpointing","url":"https://kwonyl14.github.io/spark-study/blog/week-1-caching-vs-checkpointing","headline":"1주차: Spark Caching과 Checkpointing의 차이와 실전 활용법","name":"1주차: Spark Caching과 Checkpointing의 차이와 실전 활용법","description":"Spark 성능 최적화의 핵심인 Caching(StorageLevel)과 Checkpointing의 내부 동작 원리를 깊이 있게 비교하고, 실무 적용 기준을 정리한다.","datePublished":"2026-02-22T00:00:00.000Z","author":{"@type":"Person","name":"Kwon Younglin","description":"Data Engineer","url":"https://github.com/kwonyl14","image":"https://github.com/kwonyl14.png"},"keywords":[]},{"@type":"BlogPosting","@id":"https://kwonyl14.github.io/spark-study/blog/week-1-spark-internals-tungsten-catalyst","mainEntityOfPage":"https://kwonyl14.github.io/spark-study/blog/week-1-spark-internals-tungsten-catalyst","url":"https://kwonyl14.github.io/spark-study/blog/week-1-spark-internals-tungsten-catalyst","headline":"1주차: Spark 내부 동작 원리 - 직렬화, Tungsten, Catalyst의 이해","name":"1주차: Spark 내부 동작 원리 - 직렬화, Tungsten, Catalyst의 이해","description":"스파크 RDD, DataFrame, Dataset의 성능 차이를 만드는 직렬화의 비밀과 Tungsten 엔진, Catalyst 옵티마이저의 동작 원리를 설명한다.","datePublished":"2026-02-22T00:00:00.000Z","author":{"@type":"Person","name":"Kwon Younglin","description":"Data Engineer","url":"https://github.com/kwonyl14","image":"https://github.com/kwonyl14.png"},"keywords":[]}]}</script><link rel="alternate" type="application/rss+xml" href="/spark-study/blog/rss.xml" title="My Site RSS Feed">
+<title data-rh="true">Blog | My Site</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://kwonyl14.github.io/spark-study/img/docusaurus-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://kwonyl14.github.io/spark-study/img/docusaurus-social-card.jpg"><meta data-rh="true" property="og:url" content="https://kwonyl14.github.io/spark-study/blog"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" property="og:title" content="Blog | My Site"><meta data-rh="true" name="description" content="Blog"><meta data-rh="true" property="og:description" content="Blog"><meta data-rh="true" name="docusaurus_tag" content="blog_posts_list"><meta data-rh="true" name="docsearch:docusaurus_tag" content="blog_posts_list"><link data-rh="true" rel="icon" href="/spark-study/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://kwonyl14.github.io/spark-study/blog"><link data-rh="true" rel="alternate" href="https://kwonyl14.github.io/spark-study/blog" hreflang="en"><link data-rh="true" rel="alternate" href="https://kwonyl14.github.io/spark-study/blog" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"Blog","@id":"https://kwonyl14.github.io/spark-study/blog","mainEntityOfPage":"https://kwonyl14.github.io/spark-study/blog","headline":"Blog","description":"Blog","blogPost":[{"@type":"BlogPosting","@id":"https://kwonyl14.github.io/spark-study/blog/2026/02/22/Foundation-907hza","mainEntityOfPage":"https://kwonyl14.github.io/spark-study/blog/2026/02/22/Foundation-907hza","url":"https://kwonyl14.github.io/spark-study/blog/2026/02/22/Foundation-907hza","headline":"Foundation","name":"Foundation","description":"1. Spark Layered Architecture","datePublished":"2026-02-22T00:00:00.000Z","author":[],"keywords":[]},{"@type":"BlogPosting","@id":"https://kwonyl14.github.io/spark-study/blog/week-1-caching-vs-checkpointing","mainEntityOfPage":"https://kwonyl14.github.io/spark-study/blog/week-1-caching-vs-checkpointing","url":"https://kwonyl14.github.io/spark-study/blog/week-1-caching-vs-checkpointing","headline":"1주차: Spark Caching과 Checkpointing의 차이와 실전 활용법","name":"1주차: Spark Caching과 Checkpointing의 차이와 실전 활용법","description":"Spark 성능 최적화의 핵심인 Caching(StorageLevel)과 Checkpointing의 내부 동작 원리를 깊이 있게 비교하고, 실무 적용 기준을 정리한다.","datePublished":"2026-02-22T00:00:00.000Z","author":{"@type":"Person","name":"Kwon Younglin","description":"Data Engineer","url":"https://github.com/kwonyl14","image":"https://github.com/kwonyl14.png"},"keywords":[]},{"@type":"BlogPosting","@id":"https://kwonyl14.github.io/spark-study/blog/week-1-spark-internals-tungsten-catalyst","mainEntityOfPage":"https://kwonyl14.github.io/spark-study/blog/week-1-spark-internals-tungsten-catalyst","url":"https://kwonyl14.github.io/spark-study/blog/week-1-spark-internals-tungsten-catalyst","headline":"1주차: Spark 내부 동작 원리 - 직렬화, Tungsten, Catalyst의 이해","name":"1주차: Spark 내부 동작 원리 - 직렬화, Tungsten, Catalyst의 이해","description":"스파크 RDD, DataFrame, Dataset의 성능 차이를 만드는 직렬화의 비밀과 Tungsten 엔진, Catalyst 옵티마이저의 동작 원리를 설명한다.","datePublished":"2026-02-22T00:00:00.000Z","author":{"@type":"Person","name":"Kwon Younglin","description":"Data Engineer","url":"https://github.com/kwonyl14","image":"https://github.com/kwonyl14.png"},"keywords":[]},{"@type":"BlogPosting","@id":"https://kwonyl14.github.io/spark-study/blog/2026/02/19/warmup-907hza","mainEntityOfPage":"https://kwonyl14.github.io/spark-study/blog/2026/02/19/warmup-907hza","url":"https://kwonyl14.github.io/spark-study/blog/2026/02/19/warmup-907hza","headline":"Warmup","name":"Warmup","description":"- 개발 환경","datePublished":"2026-02-19T00:00:00.000Z","author":[],"keywords":[]}]}</script><link rel="alternate" type="application/rss+xml" href="/spark-study/blog/rss.xml" title="My Site RSS Feed">
 <link rel="alternate" type="application/atom+xml" href="/spark-study/blog/atom.xml" title="My Site Atom Feed"><link rel="stylesheet" href="/spark-study/assets/css/styles.5a6f1bcb.css">
-<script src="/spark-study/assets/js/runtime~main.13b8bddd.js" defer="defer"></script>
-<script src="/spark-study/assets/js/main.deed3eda.js" defer="defer"></script>
+<script src="/spark-study/assets/js/runtime~main.b41ce253.js" defer="defer"></script>
+<script src="/spark-study/assets/js/main.d8ba77c1.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <svg style="display: none;"><defs>
 <symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
 </defs></svg>
-<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><link rel="preload" as="image" href="/spark-study/img/logo.svg"><link rel="preload" as="image" href="https://github.com/kwonyl14.png"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/spark-study/"><div class="navbar__logo"><img src="/spark-study/img/logo.svg" alt="My Site Logo" class="themedComponent_mlkZ themedComponent--light_NVdE"><img src="/spark-study/img/logo.svg" alt="My Site Logo" class="themedComponent_mlkZ themedComponent--dark_xIcU"></div><b class="navbar__title text--truncate">My Site</b></a><a class="navbar__item navbar__link" href="/spark-study/docs/intro">Tutorial</a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/spark-study/blog">Blog</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><a href="https://github.com/facebook/docusaurus" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="container margin-vert--lg"><div class="row"><aside class="col col--3"><nav class="sidebar_re4s thin-scrollbar" aria-label="Blog recent posts navigation"><div class="sidebarItemTitle_pO2u margin-bottom--md">Recent posts</div><div role="group"><h3 class="yearGroupHeading_rMGB">2026</h3><ul class="sidebarItemList_Yudw clean-list"><li class="sidebarItem__DBe"><a class="sidebarItemLink_mo7H" href="/spark-study/blog/week-1-caching-vs-checkpointing">1주차: Spark Caching과 Checkpointing의 차이와 실전 활용법</a></li><li class="sidebarItem__DBe"><a class="sidebarItemLink_mo7H" href="/spark-study/blog/week-1-spark-internals-tungsten-catalyst">1주차: Spark 내부 동작 원리 - 직렬화, Tungsten, Catalyst의 이해</a></li></ul></div></nav></aside><main class="col col--7"><article class="margin-bottom--xl"><header><h2 class="title_f1Hy"><a href="/spark-study/blog/week-1-caching-vs-checkpointing">1주차: Spark Caching과 Checkpointing의 차이와 실전 활용법</a></h2><div class="container_mt6G margin-vert--md"><time datetime="2026-02-22T00:00:00.000Z">February 22, 2026</time> · <!-- -->4 min read</div><div class="margin-top--md margin-bottom--sm row"><div class="col col--12 authorCol_Hf19"><div class="avatar margin-bottom--sm"><a href="https://github.com/kwonyl14" target="_blank" rel="noopener noreferrer" class="avatar__photo-link"><img class="avatar__photo authorImage_XqGP" src="https://github.com/kwonyl14.png" alt="Kwon Younglin"></a><div class="avatar__intro authorDetails_lV9A"><div class="avatar__name"><a href="https://github.com/kwonyl14" target="_blank" rel="noopener noreferrer"><span class="authorName_yefp" translate="no">Kwon Younglin</span></a></div><small class="authorTitle_nd0D" title="Data Engineer">Data Engineer</small><div class="authorSocials_rSDt"></div></div></div></div></div></header><div class="markdown"><p>스파크(Spark) 애플리케이션을 개발하다 보면 Join이나 정렬(Sort) 같은 무거운(Expensive) 연산 결과를 여러 번 재사용해야 하는 상황이 반드시 발생한다. 이때 아무 처리도 하지 않으면 액션(Action)이 호출될 때마다 데이터를 처음부터 다시 읽고 계산하는 엄청난 비효율이 발생한다.</p>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><link rel="preload" as="image" href="/spark-study/img/logo.svg"><link rel="preload" as="image" href="https://github.com/kwonyl14.png"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/spark-study/"><div class="navbar__logo"><img src="/spark-study/img/logo.svg" alt="My Site Logo" class="themedComponent_mlkZ themedComponent--light_NVdE"><img src="/spark-study/img/logo.svg" alt="My Site Logo" class="themedComponent_mlkZ themedComponent--dark_xIcU"></div><b class="navbar__title text--truncate">My Site</b></a><a class="navbar__item navbar__link" href="/spark-study/docs/intro">Tutorial</a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/spark-study/blog">Blog</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><a href="https://github.com/facebook/docusaurus" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="container margin-vert--lg"><div class="row"><aside class="col col--3"><nav class="sidebar_re4s thin-scrollbar" aria-label="Blog recent posts navigation"><div class="sidebarItemTitle_pO2u margin-bottom--md">Recent posts</div><div role="group"><h3 class="yearGroupHeading_rMGB">2026</h3><ul class="sidebarItemList_Yudw clean-list"><li class="sidebarItem__DBe"><a class="sidebarItemLink_mo7H" href="/spark-study/blog/2026/02/22/Foundation-907hza">Foundation</a></li><li class="sidebarItem__DBe"><a class="sidebarItemLink_mo7H" href="/spark-study/blog/week-1-caching-vs-checkpointing">1주차: Spark Caching과 Checkpointing의 차이와 실전 활용법</a></li><li class="sidebarItem__DBe"><a class="sidebarItemLink_mo7H" href="/spark-study/blog/week-1-spark-internals-tungsten-catalyst">1주차: Spark 내부 동작 원리 - 직렬화, Tungsten, Catalyst의 이해</a></li><li class="sidebarItem__DBe"><a class="sidebarItemLink_mo7H" href="/spark-study/blog/2026/02/19/warmup-907hza">Warmup</a></li></ul></div></nav></aside><main class="col col--7"><article class="margin-bottom--xl"><header><h2 class="title_f1Hy"><a href="/spark-study/blog/2026/02/22/Foundation-907hza">Foundation</a></h2><div class="container_mt6G margin-vert--md"><time datetime="2026-02-22T00:00:00.000Z">February 22, 2026</time> · <!-- -->21 min read</div></header><div class="markdown"><h1>1. Core</h1>
+<ol>
+<li class="">
+<p><strong>Spark Layered Architecture</strong></p>
+<ul>
+<li class=""><strong>Storage 계층</strong>
+<ul>
+<li class="">files, HDFS, S3, databases</li>
+</ul>
+</li>
+<li class=""><strong>Cluster manager</strong>
+<ul>
+<li class="">standalone(bundled with spark)</li>
+<li class="">YARN</li>
+<li class="">Mesos</li>
+<li class="">Kubernetes</li>
+</ul>
+</li>
+<li class=""><strong>Spark Core</strong>
+<ul>
+<li class="">RDD 는 Spark 의 가장 기본 단위 (first citizens) → Spark 초창기부터 변하지 않음</li>
+<li class="">DataFrame &amp; SQL 은 많은 자동 최적화 기능 제공</li>
+</ul>
+</li>
+<li class=""><strong>High-level libs</strong>
+<ul>
+<li class="">Streaming, ML, GraphX → 모든 라이브러리는 Spark Core(RDD) 를 기반으로 동작</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Spark Architecture</strong></p>
+<p><strong>Spark 에서는 worker 노드들이 실제 작업을 수행하는 역할을 한다.</strong></p>
+<ul>
+<li class=""><strong>Executor</strong>
+<ul>
+<li class="">worker 의 논리적 노드 (JVM)</li>
+<li class="">하나의 애플리케이션을 위해 작업 수행</li>
+<li class="">한 애플리케이션에서 여러 개 존재 가능</li>
+<li class="">독립적인 메모리/CPU 자원을 가진 JVM 컨테이너</li>
+</ul>
+</li>
+<li class=""><strong>Driver</strong>
+<ul>
+<li class="">Spark 애플리케이션의 메인 JVM</li>
+<li class="">애플리케이션 하나 당 Driver 하나</li>
+<li class="">작업을 시작하면 executor 에게 작업을 분배하는 역할</li>
+</ul>
+</li>
+<li class=""><strong>Cluster manager</strong>
+<ul>
+<li class="">executor 배포 관리</li>
+<li class="">Driver 가 executor 와 자원을 요청하는 역할</li>
+</ul>
+</li>
+</ul>
+<p><strong>성능을 위해서 Driver 는 worker 와 물리적으로 가까이 있어야 좋고, worker 들끼리도 가까워야 shuffle 비용이 감소한다. (물리적 거리 = 성능 차이)</strong></p>
+</li>
+<li class="">
+<p><strong>RDD / DataFrame / Dataset</strong></p>
+</li>
+</ol>
+<ul>
+<li class=""><strong>RDD : 분산된 JVM 객체들의 타입이 있는 컬렉션</strong>
+<ul>
+<li class="">특징 : Spark 의 가장 기본 단위로, 상위 API 들도 결국 RDD 로 환원됨</li>
+<li class="">장점 : 분산 제어 가능, 순서 제어 가능, SQL 로 표현 불가능한 복잡한 연산 가능</li>
+<li class="">단점 : 사용하기 어려움, Spark 내부 동작을 알아야 고급 연산 가능, 빠른 데이터 처리를 위한 API 가 부족함</li>
+</ul>
+</li>
+<li class=""><strong>DataFrame : 고수준 분산 데이터 구조</strong>
+<ul>
+<li class="">특징 : Row 기반, 스키마 존재, SQL 지원, SQL 최적화 후 내부적으로 RDD 생성</li>
+<li class="">장점 : 사용 쉬움, SQL 지원, Spark 가 자동 최적화</li>
+<li class="">단점 : 타입 안전하지 않음, 모든 계산 표현 불가, 추가 최적화 어려움</li>
+</ul>
+</li>
+<li class=""><strong>Dataset[T] : 타입이 있는 분산 컬렉션</strong>
+<ul>
+<li class="">특징 : DataFrame 의 SQL 기능 지원, RDD 의 함수형 연산 지원 (DataFrame = Dataset[Row])</li>
+<li class="">장점 : 타입 안전, SQL + 함수형 프로그래밍 모두 가능, 일부 자동 최적화 지원</li>
+<li class="">단점 : JVM 객체 생성 비용 큼, 람다 최적화 불가능</li>
+</ul>
+</li>
+</ul>
+<ol>
+<li class="">
+<p><strong>Performance tips (성능 팁)</strong></p>
+<ul>
+<li class="">
+<p>대부분의 경우 DataFrame 을 사용한다.</p>
+<p>→ SQL 로 거의 모든 것을 표현할 수 있고, DataFrame 은 Spark 가 이미 최적화를 지원해주기 때문이다.</p>
+</li>
+<li class="">
+<p>RDD 는 특수한 연산이 필요할 때만 사용하는 것이 좋다.</p>
+</li>
+<li class="">
+<p>타입을 계속 바꾸는 것은 절대 금물이다.</p>
+<p>DataFrame ⇄ RDD[Type] 변환은 매우 비싸다. 특히 파이썬에서.</p>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Computing Anything</strong></p>
+<ul>
+<li class="">
+<p><strong>Spark 실행 원리</strong></p>
+<ul>
+<li class="">Lazy Evaluation (지연 실행) : Spark 는 마지막 순간까지 실행하지 않는다.</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Planning (계획 수립)</strong></p>
+<ol>
+<li class="">DF/SQL → RDD 변환</li>
+<li class="">RDD 변환들을 그래프로 구성</li>
+<li class="">Logical Plan 생성</li>
+<li class="">Physical Plan 생성</li>
+<li class="">최적화 수행</li>
+</ol>
+<p><strong>Spark 는 컴파일러가 동작한다.</strong></p>
+</li>
+<li class="">
+<p><strong>Transformations vs Actions</strong></p>
+<ul>
+<li class="">Transformations : 새로운 RDD/DF 반환 → 실행되지 않음</li>
+<li class="">Actions : 실제 실행 트리거 → 결과 반환 (Action 이 호출되면 Job 시작)</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Spark App Executor</strong></p>
+<ul>
+<li class=""><strong>Spark 애플리케이션 실행</strong>
+<ul>
+<li class="">Action → Job 발생</li>
+</ul>
+</li>
+<li class=""><strong>Job → Stage 로 분할</strong>
+<ul>
+<li class="">Stage 는 이전 Stage 완료 후 시작</li>
+<li class="">Stage 수는 최소화하는 것이 좋음</li>
+</ul>
+</li>
+<li class=""><strong>Stage → Task 로 분할</strong>
+<ul>
+<li class="">Task = 가장 작은 작업 단위</li>
+<li class="">하나의 Partition 을 처리</li>
+<li class="">executor 에서 실행</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<table><thead><tr><th><strong>개념</strong></th><th><strong>관계</strong></th></tr></thead><tbody><tr><td>1 Job</td><td>1개 이상의 Stage</td></tr><tr><td>1 Stage</td><td>1개 이상의 Task</td></tr><tr><td>1 Task</td><td>1 Partition 처리</td></tr><tr><td>1 Executor</td><td>여러 Task 실행 가능</td></tr><tr><td>1 Partition</td><td>하나의 Executor에 존재</td></tr></tbody></table>
+</li>
+<li class="">
+<p><strong>Optimization Goals (최적화 목표)</strong></p>
+<p>목표는 하나 ⇒ 실행 시간 최적화 !</p>
+<p>이를 위해서 Spark 의 내부 동작 이해와 효율적인 코드 작성이 필요 …</p>
+</li>
+</ol>
+<hr>
+<h1>2. Spark Job Anatomy</h1>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">// local</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">docker exec -it spark-cluster-spark-master-1 bash</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">// master cluster</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">cd /spark/bin</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">./spark-shell</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">val rdd1 = sc.parallelize(1 to 1000000) // 변수 선언 + RDD 생성</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">rdd1.count() // stage 1 , task 8</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">rdd1.map(_ * 2).count() // stage 1 , task 8</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">rdd1.repartition(23).count() // stage 1/2 , task 8/23</span><br></span></code></pre></div></div>
+<ol>
+<li class="">
+<p><strong>Stage &amp; Task 분해</strong></p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">// local</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">docker cp src/main/resources/data spark-cluster-spark-master-1:/tmp</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">// master cluster</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">val employees = sc.textFile(&quot;/tmp/data/employees/employees.csv&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">val empTokens = employees.map(line =&gt; line.split(&quot;,&quot;))</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">val empDetails = empTokens.map(tokens =&gt; (tokens(4), tokens(7)))</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">val empGroups = empDetails.**groupByKey**(2)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">val avgSalaries = empGroups.mapValues(salaries =&gt; salaries.map(_.toInt).sum / salaries.size)</span><br></span></code></pre></div></div>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">val employees = sc.textFile(&quot;/tmp/data/employees/employees.csv&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">// RDD[String]</span><br></span></code></pre></div></div>
+<p><strong>step 1</strong> : CSV 파일을 RDD 로 읽는다. (각 줄이 하나의 문자열로 구성된 RDD 생성)</p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">val empTokens = employees.map(line =&gt; line.split(&quot;,&quot;))</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">// RDD[Array[String]]</span><br></span></code></pre></div></div>
+<p><strong>step 2</strong> : 각 줄을 콤마(,) 기준으로 분리하고 하나의 행이 문자열 배열로 변환된다.</p>
+<ul>
+<li class=""><strong>Narrow transformation</strong> : 파티션끼리 서로 알 필요가 없기 때문에, 셔플 없음</li>
+</ul>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">val empDetails = empTokens.map(tokens =&gt; (tokens(4), tokens(7)))</span><br></span></code></pre></div></div>
+<p><strong>step 3</strong> : 필요한 정보만 뽑아서 튜플로 만드는데, 여기서도 셔플 없음</p>
+<ul>
+<li class="">5번째 컬럼 (token(4)), 8번째 컬럼 (token(7)) 두 개로 튜플 생성
+RDD[(String, String)] ← (token(4)) : 부서 / (token(7)) : 급여의 경우
+(부서, 급여) ← 모든 행을 사용하지만, 해당 컬럼만 뽑아오는 경우</li>
+</ul>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">val empGroups = empDetails.groupByKey(2)</span><br></span></code></pre></div></div>
+<p><strong>step 4</strong> : 데이터를 부서별로 그룹핑한다.</p>
+<ul>
+<li class="">
+<p><strong>Wide transformation</strong> : 모든 파티션이 고려되어야 하기 때문에, 셔플 있음</p>
+<p>(Shuffle : 데이터가 executor 들 사이에서 이동 → 매우 비쌈..)</p>
+</li>
+<li class="">
+<p><strong>repartition(n)</strong> : 파티션 개수만 조정 (데이터를 다시 골고루 섞음)</p>
+</li>
+<li class="">
+<p><strong>groupByKey(n)</strong> : 키 기준으로 데이터를 모으면서 결과 파티션을 n개로 나눔</p>
+</li>
+</ul>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">val avgSalaries = empGroups.mapValues(salaries =&gt; </span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	salaries.map(_.toInt).sum / salaries.size)</span><br></span></code></pre></div></div>
+<p><strong>step 5</strong> : 급여 문자열 → int 변환 후 집계한 값을 개수로 나눠서 평균을 계산해준다.</p>
+<ul>
+<li class="">RDD[(부서, 평균급여)]</li>
+</ul>
+<p>앞 전체 코드 흐름을 Stage1/Stage2 로 구분해서 보여준다.</p>
+<p>→ 중간에 groupByKey 때문에 shuffle 이 생겨서 stage 가 분리된다.</p>
+</li>
+<li class="">
+<p><strong>Task / Stage / Shuffle</strong></p>
+<ul>
+<li class=""><strong>Task</strong> : 가장 작은 계산 단위로, 하나의 파티션에 대해 한 번 실행되며, 하나의 executor 에서 실행된다.</li>
+<li class=""><strong>Stage</strong> : Task 들을 포함하는 단위로, 데이터 교환이 없음을 강제한다. (=파티션이 서로 데이터를 필요로 하지 않는 상태), 이전 Stage 에 의존한다. (=이전 Stage가 끝나야 시작 가능)</li>
+<li class=""><strong>Job / Stage / Task</strong>
+<ul>
+<li class="">
+<p>Spark Application = SparkContext(또는 SparkSession) 실행 단위</p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain"># Application1</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">rdd1.count()              // Job 1</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">rdd1.map(_*2).count()      // Job 2</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">rdd1.repartition(23).count() // Job 3</span><br></span></code></pre></div></div>
+</li>
+<li class="">
+<p>Job = action 실행 단위</p>
+</li>
+<li class="">
+<p>Stage = Shuffle 기준으로 Job 내부가 나뉜 단위</p>
+</li>
+<li class="">
+<p>Task = Stage 를 파티션 단위로 쪼갠 실행 단위</p>
+</li>
+</ul>
+</li>
+<li class=""><strong>Shuffle</strong>
+<ul>
+<li class="">executor 들 사이에서 데이터 교환이 발생한다.</li>
+<li class="">Stage 사이에서 발생한다.</li>
+<li class="">다음 Stage 가 시작되기 전에 반드시 완료되어야 한다.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>의존성 (Dependencies)</strong></p>
+</li>
+</ol>
+<ul>
+<li class=""><strong>Narrow dependencies</strong>
+<ul>
+<li class="">하나의 입력(부모) 파티션이 하나의 출력(자식) 파티션에만 영향을 주고, 계산이 빠르다.</li>
+<li class="">ex: map, flatMap, filter, projections 등</li>
+</ul>
+</li>
+<li class=""><strong>Wide dependencies</strong>
+<ul>
+<li class="">하나의 입력 파티션이 둘 이상의 출력 파티션에 영향을 주고, shuffle 을 포함한다. (=executor 사이 데이터 전송) 그래서 계산 비용이 크다.</li>
+<li class="">ex: grouping, joining, sorting 등</li>
+</ul>
+</li>
+</ul>
+<ol>
+<li class=""><strong>셔플 (Shuffle)</strong>
+<ul>
+<li class="">셔플이 비싼 이유<!-- -->
+<ul>
+<li class="">데이터 전송, 직렬화/역직렬화, 셔플 파일에서 새 데이터를 로딩해야 하기 때문</li>
+</ul>
+</li>
+<li class="">셔플이 성능 병목이 되는 이유<!-- -->
+<ul>
+<li class="">데이터 교환 자체가 시간이 걸린다.</li>
+<li class="">다음 계산이 시작되기 전에 반드시 완전히 끝나야 한다.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h1>3. 쿼리 실행 계획 (Query Plans)</h1>
+<ol>
+<li class="">
+<p><strong>SQL Job 이 실행되는 방식</strong></p>
+<p>Spark SQL은 <strong>Catalyst Optimizer</strong> 를 사용한다. SQL을 실행하면 내부적으로 다음 단계가 진행된다.</p>
+<ul>
+<li class=""><strong>Unresolved Logical Plan</strong>
+<ul>
+<li class="">아직 컬럼/테이블 참조가 확정되지 않은 논리적 계획</li>
+</ul>
+</li>
+<li class=""><strong>Resolved Logical Plan</strong>
+<ul>
+<li class="">컬럼 타입, 참조 테이블 확정</li>
+</ul>
+</li>
+<li class=""><strong>Optimized Logical Plan</strong>
+<ul>
+<li class="">불필요한 연산 제거, 필터 푸시다운, 컬럼 프루닝 등 최적화 적용</li>
+</ul>
+</li>
+<li class=""><strong>Physical Plan 생성</strong>
+<ul>
+<li class="">실제 클러스터에서 실행할 물리적 연산 결정</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>쿼리 실행 계획 읽는 방법</strong></p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">val ds1 = spark.range(1, 10000000)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">val ds2 = spark.range(1, 100000000, 2)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">val ds3 = ds1.repartition(7)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">val ds4 = ds2.repartition(9)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">val ds5 = ds3.selectExpr(&quot;id * 3 as id&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">val joined = ds5.join(ds4, &quot;id&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">val sum = joined.selectExpr(&quot;sum(id)&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">sum.explain()</span><br></span></code></pre></div></div>
+<p>sum.explain() 결과로 물리 실행 계획이 출력된다. (실행 X)</p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">AdaptiveSparkPlan // AQE 가 활성화되어 있음</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  └─ HashAggregate (final sum)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      └─ Exchange SinglePartition</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">          └─ HashAggregate (partial sum)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">              └─ Project</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                  └─ SortMergeJoin</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                      ├─ Left branch</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                      └─ Right branch</span><br></span></code></pre></div></div>
+<ul>
+<li class=""><strong>Query plan 의 기본 구성 요소</strong>
+<ul>
+<li class="">
+<p><strong>Range</strong></p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">Range (1, 10000000, step=1)</span><br></span></code></pre></div></div>
+<ul>
+<li class="">spark.range() 는 <strong>SparkSession 기반으로 내부 데이터를 생성</strong>하는 논리적 데이터 소스이며, 실제 파일을 읽지 않고 Range Scan 단계로 실행 계획에 나타난다. 초기 파티션 수는 Spark SQL 의 설정 및 내부 계산 로직에 의해 결정된다.</li>
+<li class="">spark.range() 의 초기 파티션 수<!-- -->
+<ul>
+<li class="">spark.sql.shuffle.partitions (기본 200)</li>
+<li class="">또는 Spark 가 내부적으로 잡는 partition 수</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Exchange</strong></p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">Exchange **hashpartitioning**(...)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Exchange **RoundRobinPartitioning**(...)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Exchange **SinglePartition**</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">// -&gt; 물리적 계획에서 이 세개 보이는 경우, shuffle 발생</span><br></span></code></pre></div></div>
+<ul>
+<li class="">exchange 는 해당 지점에서 shuffle 이 발생했음을 의미한다. exchange 가 수행되면 executor 간 데이터 이동이 발생하며, 이 과정에서 네트워크/디스크 I/O + 직렬화 비용이 추가로 발생한다. 또한 shuffle 을 기준으로 Stage 경계가 생성되어 이전 연산과 이후 연산이 서로 다른 Stage 로 분리된다.
+exchange 이후에는 파티션이 다시 구성되므로, 다음 Stage 의 Task 수와 병렬성이 새롭게 결정된다.
+따라서 <strong>실행 계획에서 exchange → shuffle 발생 → Stage 분리 → 병렬 구조 재구성</strong></li>
+</ul>
+</li>
+<li class="">
+<p><strong>Sort</strong></p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">Sort [id ASC NULLS FIRST]</span><br></span></code></pre></div></div>
+<ul>
+<li class="">sort 는 데이터가 특정 컬럼 기준으로 정렬되는 것을 의미한다. 위 같은 경우, id 컬럼을 오름차순으로 정렬하며, NULL 값은 앞쪽에 배치한다.
+sortmergejoin 이 선택된 경우, join 수행 전에 반드시 정렬이 필요하다.<!-- -->
+<ul>
+<li class="">각 파티션 내부에서 조인 키 기준으로 정렬</li>
+<li class="">정렬된 두 데이터셋을 병합 방식으로 조인 수행</li>
+</ul>
+</li>
+<li class="">정렬은 CPU 사용량이 높은 연산이며, 데이터 양이 많을수록 비용이 크게 증가한다. 따라서 실행 계획에서 sort 가 보이면 성능에 영향을 줄 수 있다.</li>
+</ul>
+</li>
+<li class="">
+<p><strong>SortMergeJoin</strong></p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">SortMergeJoin [id], [id], Inner</span><br></span></code></pre></div></div>
+<ul>
+<li class="">sortmergejoin 은 두 데이터셋을 정렬 기반으로 병합하여 조인하는 방식이다. 위 같은 경우, id 컬럼을 기준으로 내부 조인을 수행하는 것이다. 이 방식에서 shuffle 과 join 이 필요합니다.<!-- -->
+<ul>
+<li class="">같은 조인 키를 가진 데이터가 반드시 같은 파티션에 있어야 한다. 이를 위해 조인 키 기준으로 hash partitioning 이 수행되며, 이 과정에서 shuffle 이 발생한다.
+<strong>→ 조인 키 기준 shuffle(exchange)</strong></li>
+<li class="">각 파티션 내부 데이터가 조인 키 기준으로 정렬되어 있어야 한다. 그래야 정렬된 두 데이터를 병합 방식으로 효율적으로 비교할 수 있다.
+<strong>→ 파티션 내부 sort</strong></li>
+</ul>
+</li>
+<li class=""><strong>대용량 데이터 조인에서 기본적으로 사용되는 전략</strong>이며, 메모리 부담이 비교적 낮고 안정적인 대신 shuffle 과 sort 비용이 발생하는 것이 특징</li>
+</ul>
+</li>
+<li class="">
+<p><strong>HashAggregate</strong></p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">partial_sum</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">sum</span><br></span></code></pre></div></div>
+<ul>
+<li class="">spark 실행 계획에서 집계가 수행되고 있음을 의미한다. 실행 계획에서 위와 같이 두 번 등장하는 이유는 <strong>spark 가 집계를 두 단계로 나누어서 처리하기 때문이다. 먼저 각 파티션 내부에서 부분 집계를 수행하여 데이터를 미리 줄인 뒤, 그 결과를 shuffle 로 모아 최종 집계를 수행한다.</strong>
+이와 같은 구조를 <strong>Two-phase aggrgation(2단계 집계)</strong> 라고 하며, 원본 데이터를 그대로 shuffle 하는 대신 부분 집계 결과만 이동시키므로 <strong>네트워크 비용을 줄이기 위한 spark 의 기본 최적화 전략</strong>이다.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Join 전에 수행되는 준비 작업</strong></p>
+<p>Query Plan 을 보면</p>
+<ul>
+<li class="">repartition(7)</li>
+<li class="">repartition(9)</li>
+</ul>
+<p>그 이후 join 직전에 아래가 수행이 된다.</p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">Exchange hashpartitioning(id, 200)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Sort</span><br></span></code></pre></div></div>
+<p>즉 Spark 는 다음 순서로 준비한다.</p>
+<ol>
+<li class="">Join을 위해 동일한 hash partitioning 수행</li>
+<li class="">각 partition 내부 정렬</li>
+<li class="">SortMergeJoin 실행</li>
+</ol>
+<p>중요한 점은 repartition(7), repartition(9)는 어차피 200 partition 으로 다시 나뉘어서 중복 Shuffle 을 유발하기 때문에 실무에서는 이런 불필요한 repartition 은 제거하는 것이 좋다.</p>
+</li>
+<li class="">
+<p><strong>sum(id)의 실행 과정</strong></p>
+<p>집계는 항상 다음 구조를 가진다.</p>
+<ol>
+<li class="">각 partition에서 partial sum 수행</li>
+<li class="">Exchange SinglePartition</li>
+<li class="">최종 sum 수행</li>
+</ol>
+<p>즉 집계는 항상 부분 집계 → Shuffle → 최종 집계</p>
+<p>SinglePartition은 모든 결과를 하나의 partition으로 모으기 때문에 병렬성이 1로 줄어든다. 하지만 global aggregation 특성상 불가피하다.</p>
+</li>
+<li class="">
+<p><strong>중요한 사항</strong></p>
+<ul>
+<li class="">몇개의 Stage 가 생기는지 (Exchange가 많을수록 Stage도 많아진다.)<!-- -->
+<ul>
+<li class="">Exchange 개수 = Shuffle 개수</li>
+<li class="">Shuffle 개수 = Stage 경계 수</li>
+</ul>
+</li>
+<li class="">몇개의 Task 가 생기는지 (Partition 수가 병렬성을 결정한다.)<!-- -->
+<ul>
+<li class="">Task 수 = Partition 수</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Query plan 의 특징</strong></p>
+<p>Query Plan 은 실행 전에 모든 연산을 보여준다. ( ← dataFrame.explain() 으로 확인 가능)</p>
+<ul>
+<li class="">
+<p>partitioning 정보 포함, Stage 구조 예측 가능, Shuffle 위치 파악 가능, Task 수 예측 가능</p>
+</li>
+<li class="">
+<p><strong>explain(true) 사용 시</strong></p>
+<p>Parsed Logical Plan, Analyzed Logical Plan, Optimized Logical Plan, Physical Plan
+위 사항들을 출력하면서 Spark 는 진짜 컴파일러처럼 동작한다.</p>
+</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h1>4. The Spark UI and DAGs</h1>
+<ol>
+<li class="">
+<p><strong>DAG (Directed Acyclic Graph)</strong></p>
+<p>방향이 있는 비순환 그래프로, spark 에서 DAG 은 Job 의 연산 의존 관계를 시각화한 그래프로 사용된다.</p>
+</li>
+<li class="">
+<p><strong>Spark UI</strong></p>
+<ul>
+<li class="">
+<p><strong>Jobs</strong> : 실행된 작업 목록, 성공/실패 여부, 소요 시간, 포함된 Stage 목록</p>
+</li>
+<li class="">
+<p><strong>Stages</strong> : Task 개수, Shuffle read/write, 실행 시간, GC 시간, 실패 Task</p>
+<p>→ 실제 성능 병목을 확인할 수 있는 곳</p>
+</li>
+<li class="">
+<p><strong>Environment</strong> : Spark 어떤 설정으로 실행되었는지 확인하는 곳</p>
+</li>
+<li class="">
+<p><strong>Executors</strong> : 메모리 사용량, GC 시간, Task 수행 수, 실패 횟수</p>
+<p>→ OOM, GC 과다 문제를 확인할 수 있는 곳</p>
+</li>
+<li class="">
+<p><strong>Storage</strong> : cache/persist 된 RDD/DF 목록, 메모리 사용량, 디스크 사용량</p>
+<p>→ 캐시가 제대로 되었는지 확인할 수 있는 곳</p>
+</li>
+<li class="">
+<p><strong>SQL</strong> (Spark SQL 을 사용한 경우) : Query plan 시각화, 각 Stage 구조, Physical plan</p>
+<p>→ Query 튜닝 시 확인할 곳</p>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Spark UI 에서 확인할 부분</strong></p>
+<ul>
+<li class=""><strong>Stages</strong> : (Duration 이 가장 긴 작업에서의 병목 후보)<!-- -->
+<ul>
+<li class="">Duration 이 가장 긴 Stage</li>
+<li class="">Shuffle read/write 작업이 가장 큰 Stage → 네트워크 I/O (join, sort, groupBy)</li>
+<li class="">Spill 이 발생한 Stage 확인 → 메모리 부족, 대용량 aggregation/join, shuffle partition</li>
+</ul>
+</li>
+<li class=""><strong>Executors</strong>
+<ul>
+<li class="">GC time 이 과도한지 → JVM 힙 압박, 객체 과다 생성, 캐시 과다 사용 가능성</li>
+<li class="">특정 executor 만 느린건지 → 일부 task 만 느리다면 data skew / 전체가 느리다면 shuffle, 파티션 문제</li>
+<li class="">실패한 task 가 있는지</li>
+</ul>
+</li>
+<li class=""><strong>SQL</strong> : 물리적 계획, exchange 위치, join 타입</li>
+</ul>
+</li>
+<li class="">
+<p><strong>spark UI 에서 기억할 것</strong></p>
+<ul>
+<li class="">Exchange가 보이면 Shuffle이다.</li>
+<li class="">Shuffle이 많으면 Stage가 많아진다.</li>
+<li class="">Partition 수가 Task 수를 결정한다.</li>
+<li class="">Task Duration 분포를 보면 Skew를 알 수 있다.</li>
+<li class="">Query Plan은 실행 설계도, UI는 실행 결과다.</li>
+<li class="">두 개를 매칭해야 정확한 병목 분석이 가능하다.</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h1>5. A Tale of Two Spark APIs</h1>
+<ol>
+<li class="">
+<p><strong>RDD</strong></p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">// RDD</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">val rdd = sc.parallelize(1 to 1000000000)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">rdd.count()</span><br></span></code></pre></div></div>
+<ul>
+<li class=""><strong>개념</strong>
+<ul>
+<li class="">Spark 의 가장 기본 API, 데이터 = JVM 객체, 연산 = 사용자 람다 함수, 실행 = 함수 체이닝</li>
+</ul>
+</li>
+<li class=""><strong>내부 동작 방식</strong>
+<ul>
+<li class="">각 파티션에서 사용자 함수 호출, 객체를 하나씩 처리, 함수 호출 오버헤드 발생, JVM 객체 생성/해제 반복, GC 부담 증가</li>
+</ul>
+</li>
+<li class=""><strong>특징</strong>
+<ul>
+<li class="">스키마가 없고, SQL 최적화 없음, 코드 생성 없음, Catalyst Optimizer 없음, 객체 기반 처리, 메모리 효율 낮춤</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>DataFrame</strong></p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">// DataFrame</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">import spark.implicits._</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">val df = rdd.toDF(&quot;id&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">df.count()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">df.selectExpr(&quot;count(*)&quot;).show()</span><br></span></code></pre></div></div>
+<ul>
+<li class=""><strong>개념</strong>
+<ul>
+<li class="">RDD 위에 만들어진 관계형 API, 데이터 = Row + Schema, 연산 = 컬럼 기반 표현, 실행 = 쿼리 계획 → 최적화 → 코드 생성</li>
+</ul>
+</li>
+<li class=""><strong>내부 표현 방식</strong>
+<ul>
+<li class="">객체 대신 UnsafeRow (바이너리 포맷) 사용, 컬럼을 바이트 배열처럼 다룸, 메모리 사용량 감소, CPU 캐시 효율 증가</li>
+</ul>
+</li>
+<li class=""><strong>특징</strong>
+<ul>
+<li class="">스키마 존재, Catalyst Optimizer 사용, predicate pushdown 가능, projection pruning 가능, join 전략 자동 선택, WholeStageCodegen 지원, GC 부담 감소</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Dataset</strong></p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">// Dataset</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">val ds = spark.range(1, 1000000000)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">ds.count()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">ds.selectExpr(&quot;count(*)&quot;).show()</span><br></span></code></pre></div></div>
+<ul>
+<li class=""><strong>개념</strong>
+<ul>
+<li class="">DataFrame + 타입 안정성, 내부 실행 엔진은 DF 와 동일, 추가로 Encoder 사용</li>
+</ul>
+</li>
+<li class=""><strong>내부 동작 방식</strong>
+<ul>
+<li class="">내부는 UnsafeRow 기반, 실행은 DF 와 동일, 객체와 Row 변환 시 Encoder 사용</li>
+</ul>
+</li>
+<li class=""><strong>특징</strong>
+<ul>
+<li class="">DF 와 동일한 최적화, 타입 안정성 제공, 약간의 인코딩/디코딩 비용 존재</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>속도 차이가 나는 이유</strong></p>
+<table><thead><tr><th><strong>항목</strong></th><th><strong>RDD</strong></th><th><strong>DataFrame</strong></th><th><strong>Dataset</strong></th></tr></thead><tbody><tr><td><strong>표현 방식</strong></td><td>함수 기반</td><td>컬럼/SQL 기반</td><td>컬럼/SQL + 타입</td></tr><tr><td><strong>내부 엔진</strong></td><td>객체 처리</td><td>UnsafeRow 처리</td><td>UnsafeRow 처리</td></tr><tr><td><strong>최적화</strong></td><td>거의 없음</td><td>Catalyst</td><td>Catalyst</td></tr><tr><td><strong>코드 생성</strong></td><td>없음</td><td>있음</td><td>있음</td></tr><tr><td><strong>성능</strong></td><td>낮음~중간</td><td>높음</td><td>높음</td></tr><tr><td><strong>타입 안정성</strong></td><td>없음</td><td>없음</td><td>있음</td></tr></tbody></table>
+<ul>
+<li class=""><strong>왜 DF/DS가 보통 더 빠른가</strong>
+<ul>
+<li class="">객체 대신 UnsafeRow 사용</li>
+<li class="">JVM 함수 호출 최소화</li>
+<li class="">WholeStageCodegen으로 코드 생성</li>
+<li class="">Catalyst Optimizer가 쿼리 최적화</li>
+<li class="">메모리 접근 패턴 최적화</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h1>6. <strong>Deploying &amp; Configuring Spark Applications</strong></h1>
+<ol>
+<li class="">
+<p><strong>Spark Configuration</strong></p>
+<p>: Spark 애플리케이션의 동작 방식, 리소스 사용량, 병렬성, 셔플 방식 등을 결정하는 설정값 집합이다.</p>
+<ul>
+<li class="">메모리를 얼마나 쓸지, Executor 를 몇 개 띄울지, Shuffle partition 을 몇 개로 할지, 직렬화 방식을 무엇으로 할지, AQE 를 켤지 말지 등을 결정하게 된다.</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Spark Application 실행 (spark-submit)</strong></p>
+<p>Spark application 은 spark-submit 으로 실행한다.</p>
+<ul>
+<li class=""><strong>주요 옵션</strong>
+<ul>
+<li class="">
+<p>-executor-memory</p>
+<p>→ 각 executor에 할당할 메모리 설정으로, executor당 RAM을 얼마나 줄 것인지 지정</p>
+</li>
+<li class="">
+<p>-driver-memory</p>
+<p>→ driver에 할당할 메모리 설정</p>
+</li>
+<li class="">
+<p>-jars</p>
+<p>→ 추가적인 JVM 라이브러리 포함</p>
+</li>
+<li class="">
+<p>-packages</p>
+<p>→ Maven 좌표로 외부 라이브러리 추가</p>
+</li>
+<li class="">
+<p>-conf (key) (value)</p>
+<p>→ 기타 Spark 설정 전달 (JVM 옵션 포함)</p>
+</li>
+<li class="">
+<p>-help</p>
+<p>→ 모든 옵션 보기</p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">// spark-submit</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">spark-submit \</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  --conf spark.executor.memory=4g \</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  --conf spark.sql.shuffle.partitions=200 \</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  app.jar</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">// SparkSession</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">SparkSession.builder()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  .config(&quot;spark.executor.memory&quot;, &quot;4g&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  .config(&quot;spark.sql.shuffle.partitions&quot;, &quot;200&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  .getOrCreate()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">// 실행 중 설정 변경</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">spark.conf.set(&quot;spark.sql.shuffle.partitions&quot;, &quot;100&quot;)</span><br></span></code></pre></div></div>
+<ul>
+<li class=""><strong>주요 옵션</strong>
+<ul>
+<li class="">-class : main class 지정</li>
+<li class="">-master : Spark cluster 주소</li>
+<li class="">-deploy-mode : 실행 모드 (client / cluster)</li>
+<li class="">-verbose : 상세 로그 출력</li>
+<li class="">-supervise : 실패 시 재시작</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>클러스터 구조</strong></p>
+<ul>
+<li class=""><strong>Cluster Manager (Standalone, YARN, Mesos, Kubernetes)</strong>
+<ul>
+<li class="">클러스터 상태를 관리하는 노드</li>
+<li class="">다른 노드들은 실제 작업 수행</li>
+<li class="">driver / worker 프로세스와 통신</li>
+</ul>
+</li>
+<li class=""><strong>Spark Executors</strong>
+<ul>
+<li class="">driver가 할당한 task 실행</li>
+<li class="">결과와 상태를 driver에 보고</li>
+</ul>
+</li>
+<li class=""><strong>Spark Driver</strong>
+<ul>
+<li class="">stage / task 상태 관리</li>
+<li class="">cluster manager와 통신</li>
+<li class="">전체 애플리케이션 제어</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>실행 모드 (Execution Modes)</strong></p>
+<p>Spark 의 실행 모드에는 local, client, cluster 세 가지가 있다.</p>
+<ul>
+<li class=""><strong>Client Mode</strong>
+<ul>
+<li class="">Driver 가 job 을 제출한 클라이언트 머신에서 실행되고, 클라이언트가 Spark 프로세스를 관리</li>
+<li class="">executor에 더 많은 리소스 할당 가능, 클라이언트 노드가 죽어도 애플리케이션은 유지 가능, 결과를 즉시 로컬에서 확인 가능</li>
+<li class="">driver 리소스 부족 가능, driver ↔ executor 통신 오버헤드, 상대적으로 느릴 수 있음</li>
+</ul>
+</li>
+<li class=""><strong>Cluster Mode</strong>
+<ul>
+<li class="">Driver가 클러스터 worker 노드에서 실행되고, cluster manager가 driver 관리</li>
+<li class="">driver에 더 많은 메모리 할당 가능, driver와 executor 통신 빠름, 전체적으로 더 빠른 성능</li>
+<li class="">driver가 있는 노드가 죽으면 애플리케이션 실패, executor에 할당할 리소스가 줄어들 수 있음</li>
+</ul>
+</li>
+<li class=""><strong>Local Mode</strong>
+<ul>
+<li class="">전체 애플리케이션이 하나의 머신에서 실행되며, 개발/테스트용</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Spark 애플리케이션 설정 방법</strong></p>
+<ul>
+<li class="">
+<p><strong>코드에서 설정</strong></p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">SparkSession.builder()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  .config(&quot;spark.executor.memory&quot;, &quot;1g&quot;)</span><br></span></code></pre></div></div>
+</li>
+<li class="">
+<p><strong>실행 후 spark.conf.set()</strong></p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">spark.conf.set(&quot;spark.executor.memory&quot;, &quot;1g&quot;) // 일부 설정은 실행 후 변경 불가함</span><br></span></code></pre></div></div>
+</li>
+<li class="">
+<p><strong>spark-submit 에서 설정 (권장)</strong></p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">spark-submit \</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">--executor-memory 4g \</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">--driver-memory 2g \</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">--conf spark.sql.shuffle.partitions=500</span><br></span></code></pre></div></div>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>배포 흐름</strong></p>
+<p>코드 작성 → JAR 패키징 → spark-submit 실행 → Driver 생성 → Executors 생성 → Task 분배 및 실행</p>
+</li>
+<li class="">
+<p><strong>실습</strong></p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">package part2foundations</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">// Spark에서 데이터를 읽고 쓰기 위한 핵심 클래스들 import</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">import org.apache.spark.sql.{SaveMode, SparkSession}</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">object TestDeployApp {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  /*</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    프로그램 실행 방법:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    spark-submit ... TestDeployApp inputFile outputFile</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    args(0) = 입력 파일 경로</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    args(1) = 출력 파일 경로</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  */</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  def main(args: Array[String]): Unit = {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // 프로그램 실행 시 인자가 2개가 아니면 종료</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    if (args.length != 2) {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      println(&quot;Need input file and output file&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      System.exit(1)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    }</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    /*</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      SparkSession 생성</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      - Spark 애플리케이션의 진입점</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      - SparkContext + SQLContext + HiveContext를 포함하는 상위 개념</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      method 1:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      .config()를 이용해서 애플리케이션 시작 시 설정 지정</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      여기서는 executor 메모리를 1g로 설정</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    */</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    val spark = SparkSession.builder()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      .appName(&quot;Test Deploy App&quot;)  // Spark UI에 표시될 애플리케이션 이름</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      .config(&quot;spark.executor.memory&quot;, &quot;1g&quot;) // Executor 메모리 설정</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      .getOrCreate()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // DataFrame DSL 사용을 위한 implicits import</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    import spark.implicits._</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    /*</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      입력 파일을 JSON 형식으로 읽기</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      option(&quot;inferSchema&quot;, &quot;true&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      - JSON 필드 타입을 자동으로 추론</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      - 별도로 schema를 지정하지 않아도 됨</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      args(0)은 입력 파일 경로</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    */</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    val moviesDF = spark.read</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      .option(&quot;inferSchema&quot;, &quot;true&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      .json(args(0))</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    /*</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      DataFrame 변환 로직</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      1. select:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">         - 필요한 컬럼만 선택</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">         - 컬럼 이름 변경(as)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      2. where:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">         - Major_Genre가 Comedy이고</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">         - IMDB_Rating이 6.5보다 큰 영화만 필터링</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      3. orderBy:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">         - Rating 기준 내림차순 정렬</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">         - null 값은 마지막으로 보냄</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    */</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    val goodComediesDF = moviesDF.select(</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      $&quot;Title&quot;,</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      $&quot;IMDB_Rating&quot;.as(&quot;Rating&quot;),</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      $&quot;Release_Date&quot;.as(&quot;Release&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    )</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      .where(($&quot;Major_Genre&quot; === &quot;Comedy&quot;) and ($&quot;IMDB_Rating&quot; &gt; 6.5))</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      .orderBy($&quot;Rating&quot;.desc_nulls_last)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    /*</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      method 2:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      spark.conf.set()을 이용한 설정 변경</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      ⚠ 주의:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      - 모든 설정이 런타임 중 변경 가능한 것은 아님</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      - executor.memory 같은 설정은 이미 SparkContext가 시작된 이후라</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">        실제 executor 메모리에 반영되지 않을 수 있음</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    */</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    spark.conf.set(&quot;spark.executor.memory&quot;, &quot;1g&quot;) // 경고: 일부 설정은 변경 불가</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    /*</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      method 3:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      spark-submit 실행 시 --conf 옵션으로 설정 전달</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      예:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">        spark-submit \</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">          --conf spark.executor.memory=1g \</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">          --master local[*] \</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">          yourJar.jar input output</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      또는 전용 옵션 사용 가능:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">        --master              → spark.master</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">        --executor-memory     → spark.executor.memory</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">        --driver-memory       → spark.driver.memory</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      -&gt; 실무에서는 보통 spark-submit 단계에서 설정을 전달</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    */</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // 변환된 결과를 콘솔에 출력 (Action 발생)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    goodComediesDF.show()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    /*</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      결과를 JSON 파일로 저장</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      mode(SaveMode.Overwrite):</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      - 기존 파일이 있으면 덮어쓰기</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      format(&quot;json&quot;):</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      - JSON 형식으로 저장</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      save(args(1)):</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      - 출력 경로</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      - Spark는 디렉토리 단위로 저장</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">        (여러 partition 파일 생성 가능)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    */</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    goodComediesDF.write</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      .mode(SaveMode.Overwrite)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      .format(&quot;json&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      .save(args(1))</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // SparkSession 종료 (명시적으로 호출해도 되고 안 해도 되지만 권장)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    spark.stop()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  }</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">}</span><br></span></code></pre></div></div>
+</li>
+</ol>
+<hr>
+<h1>7. <strong>Catalyst (Catalyst Query Optimizer)</strong></h1>
+<ol>
+<li class="">
+<p><strong>Catalyst</strong></p>
+<p>: Spark SQL, DF, DS 를 위한 쿼리 최적화 엔진으로, RDD 에는 없고, SQL 구조를 가진 API 에서만 동작</p>
+</li>
+<li class="">
+<p><strong>Spark Job 내부 동작</strong></p>
+<p>Spark는 SQL/DataFrame 연산이 실행되면 아래 과정을 거친다.</p>
+<ul>
+<li class=""><strong>Unresolved Logical Plan (미해결 논리 계획)</strong>
+<ul>
+<li class="">Spark 는 연산 구조를 트리 형태로 만든다.</li>
+<li class="">아직 컬럼 타입이나 실제 테이블 위치는 모르고, 단순히 무엇을 하라는 구조만 있다.</li>
+</ul>
+</li>
+<li class=""><strong>Resolved Logical Plan (해결된 논리 계획)</strong>
+<ul>
+<li class="">Catalog 를 사용해서 컬럼이 어디서 오는지 데이터 타입이 무엇인지 모두 확정한다.</li>
+</ul>
+</li>
+<li class=""><strong>Optimized Logical Plan (최적화된 논리 계획)</strong>
+<ul>
+<li class="">Catalyst 가 규칙 기반 최적화를 수행한다. 트리를 분석하고 변형한다.<!-- -->
+<ul>
+<li class="">불필요한 연산 제거, 계산 미리 수행, 조건 아래로 밀어넣기</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class=""><strong>Physical Plan (물리 실행 계획)</strong>
+<ul>
+<li class="">실제 어떤 알고리즘을 쓸지 결정하고, 실행 코드를 생성한다.<!-- -->
+<ul>
+<li class="">HashAggregate, SortMergeJoin, BroadcastJoin, FileScan</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Catalyst 의 주요 최적화 기법</strong></p>
+<ul>
+<li class="">
+<p><strong>Constant Folding (상수 미리 계산)</strong></p>
+<p>: 실행 전에 계산 가능한 것은 다 계산한다.</p>
+</li>
+<li class="">
+<p><strong>Filter Pushdown</strong></p>
+<p>: 가능한 한 빨리 데이터를 줄인다. → shuffle 비용을 줄이기 위함</p>
+</li>
+<li class="">
+<p><strong>Rule Combining</strong>
+: 여러 최적화 규칙을 조합해서 더 단순한 실행 계획으로 만든다. → 불필요한 Project 제거</p>
+</li>
+<li class="">
+<p><strong>Column Pruning</strong>
+: 불필요한 컬럼을 읽지 않는다. → parquet 에서 엄청 중요</p>
+</li>
+<li class="">
+<p><strong>최종 결과</strong></p>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Logical Plan vs Physical Plan</strong></p>
+<ul>
+<li class="">
+<p><strong>Logical Plan</strong></p>
+<p>: 무엇을 할지 정의, 어떻게 할지는 모름, 알고리즘 선택 없음</p>
+</li>
+<li class="">
+<p><strong>Physical Plan</strong></p>
+<p>: 실제 실행 방법, Join 알고리즘 선택, Aggregate 방식 선택, Shuffle 여부 결정</p>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Catalyst 의 강점와 약점</strong></p>
+<ul>
+<li class=""><strong>강점</strong> : 표현이 간결하고 대부분의 계산 표현이 가능하다. 자동 최적화를 지원하기 때문에 속도 향상 !</li>
+<li class=""><strong>약점 :</strong> 람다 최적화 불가</li>
+</ul>
+</li>
+<li class="">
+<p><strong>실습</strong></p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">package part2foundations</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">import org.apache.spark.sql.{DataFrame, SparkSession}</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">object CatalystDemo {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // SparkSession 생성</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // local 모드에서 실행 (클러스터 아님)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val spark = SparkSession.builder()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .appName(&quot;Catalyst Demo&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .master(&quot;local&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .getOrCreate()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // DataFrame DSL 사용을 위한 implicits import</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  import spark.implicits._</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // JSON 파일을 읽어 DataFrame 생성</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // inferSchema = true → 컬럼 타입 자동 추론</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val flights = spark.read</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .option(&quot;inferSchema&quot;, &quot;true&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .json(&quot;src/main/resources/data/flights&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // ------------------------------------------------------------</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 1. 여러 개의 where 체이닝</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Catalyst는 이런 chained filter들을 하나의 Filter로 합쳐버린다.</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // ------------------------------------------------------------</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val notFromHere = flights</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .where($&quot;origin&quot; =!= &quot;LGA&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .where($&quot;origin&quot; =!= &quot;ORD&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .where($&quot;origin&quot; =!= &quot;SFO&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .where($&quot;origin&quot; =!= &quot;DEN&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .where($&quot;origin&quot; =!= &quot;BOS&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .where($&quot;origin&quot; =!= &quot;EWR&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // explain(true)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 1. Parsed Logical Plan</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 2. Analyzed Logical Plan</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 3. Optimized Logical Plan</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 4. Physical Plan</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  //</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Optimized Logical Plan에서</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 여러 개의 where가 하나의 Filter 조건으로 합쳐지는 것을 확인할 수 있다.</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  notFromHere.explain(true)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // ------------------------------------------------------------</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 2. 팀별로 따로 만든 필터 (중복 &amp; 비효율적 코드 상황 가정)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Catalyst가 이를 자동 정리해준다.</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // ------------------------------------------------------------</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 팀1: origin != LGA &amp;&amp; dest == DEN</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  def filterTeam1(flights: DataFrame) =</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    flights</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      .where($&quot;origin&quot; =!= &quot;LGA&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      .where($&quot;dest&quot; === &quot;DEN&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 팀2: origin != EWR &amp;&amp; dest == DEN</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  def filterTeam2(flights: DataFrame) =</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    flights</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      .where($&quot;origin&quot; =!= &quot;EWR&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      .where($&quot;dest&quot; === &quot;DEN&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 두 팀 필터를 합쳐서 적용</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val filterBoth = filterTeam1(filterTeam2(flights))</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Catalyst는 여기서:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 1. 동일한 조건 중복 제거</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 2. 필터 결합</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 3. 가능한 경우 하나의 Filter 노드로 압축</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  filterBoth.explain(true)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // ------------------------------------------------------------</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 3. Filter Pushdown 예시 (데이터 소스 단계까지 필터 밀어넣기)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // ------------------------------------------------------------</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 먼저 JSON 데이터를 Parquet으로 저장</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Parquet은 컬럼 기반 포맷 → pushdown 가능</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  flights.write.save(&quot;src/main/resources/data/flights_parquet&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Parquet 파일을 읽으면서 필터 적용</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val notFromLGA = spark.read</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .load(&quot;src/main/resources/data/flights_parquet&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .where($&quot;origin&quot; =!= &quot;LGA&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // explain</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  //</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 여기서 중요한 부분:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // PushedFilters: [Not(EqualTo(origin,LGA))]</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  //</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 이 의미는</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Spark가 파일을 읽은 후 필터하는 것이 아니라</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 파일 읽기 단계에서 이미 조건을 적용한다는 뜻이다.</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  //</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 즉: Scan → Filter 가 아니라 Filtered Scan 이 된다.</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  notFromLGA.explain</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  def main(args: Array[String]): Unit = {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // 실행 로직 없음</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  }</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">}</span><br></span></code></pre></div></div>
+</li>
+</ol>
+<hr>
+<h1>8. <strong>Tungsten</strong></h1>
+<ol>
+<li class="">
+<p><strong>Tungsten</strong></p>
+<p>: Catalyst 가 계획을 최적화하는 컴파일러라면, Tungsten 은 실행을 빠르게 만드는 저수준 엔진 최적화 레이어</p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">SQL / DF 코드</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    ↓</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Logical Plan</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    ↓</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Optimized Plan</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    ↓</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Physical Plan</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    ↓</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">WholeStageCodegen (Tungsten)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    ↓</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">컴파일된 Java 코드 실행</span><br></span></code></pre></div></div>
+<ul>
+<li class="">초기 Spark 는 JVM 객체 기반으로 Java GC 에 의존했고, 객체 생성이 많아서 메모리 낭비가 많았다.</li>
+<li class="">그래서 GC Pause 가 발생하고, 메모리 단편화가 발생하고, CPU 캐시가 비효율적으로 사용되었다.</li>
+<li class="">그래서 Spark 는 JVM 객체 중심 구조를 버리고, 메모리를 직접 다루는 구조로 변경했다.</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Tungsten 의 핵심 요소</strong></p>
+<ul>
+<li class=""><strong>Off-Heap Memory Management</strong>
+<ul>
+<li class="">기존 : JVM Heap 에 객체 생성 → GC 가 관리</li>
+<li class="">Tungsten : Unsafe API 사용 → 직접 메모리 관리, JVM GC 최소화<!-- -->
+<ul>
+<li class="">GC 감소, 메모리 효율 증가, 큰 데이터 처리 안정성 증가</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class=""><strong>Cache-aware Computation</strong>
+<ul>
+<li class="">Spark 는 데이터를 객체로 저장하지 않고, 바이너리 형식(UnsafeRow)으로 저장하는데, 이 구조는 CPU 캐시에 더 잘 맞고, 메모리 접근이 연속적이며, 포인터 추적이 없음 → 즉, 메모리 접근 패턴 최적화</li>
+</ul>
+</li>
+<li class=""><strong>Whole-Stage Code Generation</strong>*<!-- -->
+<ul>
+<li class="">
+<p>Catalyst 가 Physical Plan 을 만들면, Tungsten 은 전체 연산 파이프라인을 하나의 Java 코드로 컴파일한다.</p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">// 기존</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Scan → Filter → Project → Aggregate</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">// 텅스텐 이후</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">for (row in input) {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  if (조건) {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    결과 계산</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  }</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">}</span><br></span></code></pre></div></div>
+<p>하나의 for-loop로 컴파일된다. → 함수 호출 감소, 객체 생성 감소, CPU 효율 증가</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Tungsten 이 없다면..</strong></p>
+<ul>
+<li class=""><strong>없다면..</strong>
+<ul>
+<li class="">RDD 방식 : map → filter → reduce<!-- -->
+<ul>
+<li class="">각 단계마다 객체 생성, 각 단계마다 함수 호출 → GC 증가</li>
+</ul>
+</li>
+<li class="">DF/DS + Tungsten : 연산 통합<!-- -->
+<ul>
+<li class="">객체 최소화, byte array 기반 처리, 컴파일된 코드 실행</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class=""><strong>있기 때문에..</strong>
+<ul>
+<li class="">
+<p>UnsafeRow, Off-heap memory, WholeStageCodegen, CPU cache 최적화</p>
+<p>→ 이 모든 것이 Tungsten 덕분이다.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>UnsafeRow</strong></p>
+<p>: Spark 내부 Row 표현 방식로 바이너리 포맷이다. 컬럼을 byte 배열처럼 저장한다.</p>
+<ul>
+<li class="">객체 없음, 포인터 없음, 연속 메모리, 빠른 접근</li>
+</ul>
+</li>
+<li class="">
+<p><strong>실습</strong></p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">package part2foundations</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">import org.apache.spark.sql.SparkSession</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">object TungstenDemo {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // SparkSession 생성</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // local 모드에서 실행</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val spark = SparkSession.builder()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .appName(&quot;Tungsten Demo&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .master(&quot;local&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .getOrCreate()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // SparkContext 참조</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val sc = spark.sparkContext</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // ------------------------------------------------------------</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 1. RDD 캐싱</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // ------------------------------------------------------------</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 1 ~ 10,000,000까지 숫자를 RDD로 생성</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // cache() → 메모리에 저장 (JVM 객체 형태)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val numbersRDD = sc.parallelize(1 to 10000000).cache()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 첫 번째 count()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // → 실제 연산 실행</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // → 메모리에 캐시 저장</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  numbersRDD.count()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 두 번째 count()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // → 캐시에서 읽기</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // → 훨씬 빠름</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  numbersRDD.count()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  /*</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    여기서 중요한 점:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    RDD 캐시는 JVM 객체 형태로 저장됨.</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    즉:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      - 객체 기반</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      - GC 영향 받음</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      - 메모리 효율 상대적으로 낮음</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  */</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // ------------------------------------------------------------</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 2. DataFrame 캐싱 (Tungsten 적용)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // ------------------------------------------------------------</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  import spark.implicits._</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // RDD → DataFrame 변환</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // cache() → Tungsten 기반 캐시 (UnsafeRow 형태)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val numbersDF = numbersRDD.toDF(&quot;value&quot;).cache()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 첫 실행 → 실제 연산 + 캐시 저장</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  numbersDF.count()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 두 번째 실행 → 캐시 사용</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  numbersDF.count()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  /*</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    여기서 핵심:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    DataFrame 캐시는</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    - UnsafeRow (바이너리 포맷)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    - 객체 최소화</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    - 메모리 효율 ↑</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    - GC 감소</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    즉, RDD 캐시보다 효율적이다.</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  */</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // ------------------------------------------------------------</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 3. WholeStageCodegen OFF</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // ------------------------------------------------------------</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  /*</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    WholeStageCodegen은 Tungsten의 핵심 기능.</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    여러 연산을 하나의 컴파일된 코드로 합쳐 실행한다.</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    아래 설정은 Codegen을 끄는 설정.</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  */</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  spark.conf.set(&quot;spark.sql.codegen.wholeStage&quot;, &quot;false&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val noWholeStageSum = spark.range(1000000).selectExpr(&quot;sum(id)&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 실행 계획 출력</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  noWholeStageSum.explain()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  /*</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    Physical Plan 예시 (Codegen OFF):</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    HashAggregate</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      HashAggregate</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">        Range</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    * 표시가 없음.</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    → Tungsten WholeStageCodegen 비활성 상태</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  */</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  noWholeStageSum.show()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // ------------------------------------------------------------</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 4. WholeStageCodegen ON</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // ------------------------------------------------------------</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Codegen 활성화</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  spark.conf.set(&quot;spark.sql.codegen.wholeStage&quot;, &quot;true&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val wholeStageSum = spark.range(1000000).selectExpr(&quot;sum(id)&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  wholeStageSum.explain()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  /*</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    Physical Plan 예시 (Codegen ON):</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    *(1) HashAggregate</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    +- *(1) HashAggregate</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">       +- *(1) Range</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    여기서 중요한 점:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    앞에 붙은 &quot;*&quot;</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    → WholeStageCodegen 적용됨</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    → 연산들이 하나의 파이프라인으로 합쳐짐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    → 하나의 for-loop로 컴파일됨</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  */</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  wholeStageSum.show()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // ------------------------------------------------------------</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // main</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // ------------------------------------------------------------</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  def main(args: Array[String]): Unit = {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // Spark UI를 보기 위해 프로그램을 잠시 유지</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    Thread.sleep(1000000)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  }</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">}</span><br></span></code></pre></div></div>
+<table><thead><tr><th><strong>항목</strong></th><th><strong>RDD</strong></th><th><strong>DataFrame</strong></th></tr></thead><tbody><tr><td>저장 방식</td><td>JVM 객체</td><td>UnsafeRow</td></tr><tr><td>GC 영향</td><td>큼</td><td>적음</td></tr><tr><td>메모리 효율</td><td>낮음</td><td>높음</td></tr><tr><td>CPU 캐시 효율</td><td>낮음</td><td>높음</td></tr></tbody></table>
+</li>
+</ol></div><footer class="row docusaurus-mt-lg"></footer></article><article class="margin-bottom--xl"><header><h2 class="title_f1Hy"><a href="/spark-study/blog/week-1-caching-vs-checkpointing">1주차: Spark Caching과 Checkpointing의 차이와 실전 활용법</a></h2><div class="container_mt6G margin-vert--md"><time datetime="2026-02-22T00:00:00.000Z">February 22, 2026</time> · <!-- -->4 min read</div><div class="margin-top--md margin-bottom--sm row"><div class="col col--12 authorCol_Hf19"><div class="avatar margin-bottom--sm"><a href="https://github.com/kwonyl14" target="_blank" rel="noopener noreferrer" class="avatar__photo-link"><img class="avatar__photo authorImage_XqGP" src="https://github.com/kwonyl14.png" alt="Kwon Younglin"></a><div class="avatar__intro authorDetails_lV9A"><div class="avatar__name"><a href="https://github.com/kwonyl14" target="_blank" rel="noopener noreferrer"><span class="authorName_yefp" translate="no">Kwon Younglin</span></a></div><small class="authorTitle_nd0D" title="Data Engineer">Data Engineer</small><div class="authorSocials_rSDt"></div></div></div></div></div></header><div class="markdown"><p>스파크(Spark) 애플리케이션을 개발하다 보면 Join이나 정렬(Sort) 같은 무거운(Expensive) 연산 결과를 여러 번 재사용해야 하는 상황이 반드시 발생한다. 이때 아무 처리도 하지 않으면 액션(Action)이 호출될 때마다 데이터를 처음부터 다시 읽고 계산하는 엄청난 비효율이 발생한다.</p>
 <p>이 문제를 해결하는 두 가지 핵심 무기가 바로 <strong>캐싱(Caching)</strong> 과 <strong>체크포인팅(Checkpointing)</strong> 이다. 두 기법은 비슷해 보이지만 내부 동작 원리와 목적이 완전히 다르다. 코드를 통해 이 둘의 차이를 확인한다.</p>
 <hr>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="1-caching-빠른-재사용을-위한-메모리-최적화">1. Caching: 빠른 재사용을 위한 메모리 최적화<a href="#1-caching-빠른-재사용을-위한-메모리-최적화" class="hash-link" aria-label="Direct link to 1. Caching: 빠른 재사용을 위한 메모리 최적화" title="Direct link to 1. Caching: 빠른 재사용을 위한 메모리 최적화" translate="no">​</a></h2>
@@ -55,16 +937,12 @@
 <li class="">Spark Structured Streaming 운영 시 장애 복구를 위해.</li>
 </ul>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="-실무-운영-팁">💡 실무 운영 팁<a href="#-실무-운영-팁" class="hash-link" aria-label="Direct link to 💡 실무 운영 팁" title="Direct link to 💡 실무 운영 팁" translate="no">​</a></h3>
-<p>현업에서는 긴 데이터 파이프라인을 설계할 때, 중간중간 무거운 셔플(Shuffle)이 끝나는 지점에 <strong>캐싱과 체크포인팅을 함께 사용</strong>하기도 한다. 데이터를 메모리에 올려 빠르게 재사용하면서도, 디스크에 안전하게 백업해두어 DAG를 자르고 장애에 대비하는 훌륭한 전략이다.</p></div><footer class="row docusaurus-mt-lg"><div class="col"><b>Tags:</b><ul class="tags_jXut padding--none margin-left--sm"><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/spark">spark</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/scala">scala</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/optimization">optimization</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/caching">caching</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/checkpointing">checkpointing</a></li></ul></div></footer></article><article class="margin-bottom--xl"><header><h2 class="title_f1Hy"><a href="/spark-study/blog/week-1-spark-internals-tungsten-catalyst">1주차: Spark 내부 동작 원리 - 직렬화, Tungsten, Catalyst의 이해</a></h2><div class="container_mt6G margin-vert--md"><time datetime="2026-02-22T00:00:00.000Z">February 22, 2026</time> · <!-- -->6 min read</div><div class="margin-top--md margin-bottom--sm row"><div class="col col--12 authorCol_Hf19"><div class="avatar margin-bottom--sm"><a href="https://github.com/kwonyl14" target="_blank" rel="noopener noreferrer" class="avatar__photo-link"><img class="avatar__photo authorImage_XqGP" src="https://github.com/kwonyl14.png" alt="Kwon Younglin"></a><div class="avatar__intro authorDetails_lV9A"><div class="avatar__name"><a href="https://github.com/kwonyl14" target="_blank" rel="noopener noreferrer"><span class="authorName_yefp" translate="no">Kwon Younglin</span></a></div><small class="authorTitle_nd0D" title="Data Engineer">Data Engineer</small><div class="authorSocials_rSDt"></div></div></div></div></div></header><div class="markdown"><p>스파크(Spark) 강의를 보다가 어떤 두가지 df를 repartition(7), repartition(9)으로 만든 후 join을 시도하는 예제를 봤다. 성능과 관련없이 repartition할 때와 join할 때에 어떤 explain()이 이루어지는지 확인하는 예제였지만 실제로 join전에 repartition을 한 번 해준다면 비효율적인지 궁금해졌다.
+<p>현업에서는 긴 데이터 파이프라인을 설계할 때, 중간중간 무거운 셔플(Shuffle)이 끝나는 지점에 <strong>캐싱과 체크포인팅을 함께 사용</strong>하기도 한다. 데이터를 메모리에 올려 빠르게 재사용하면서도, 디스크에 안전하게 백업해두어 DAG를 자르고 장애에 대비하는 훌륭한 전략이다.</p></div><footer class="row docusaurus-mt-lg"><div class="col"><b>Tags:</b><ul class="tags_jXut padding--none margin-left--sm"><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/spark">spark</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/scala">scala</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/optimization">optimization</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/caching">caching</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/checkpointing">checkpointing</a></li></ul></div></footer></article><article class="margin-bottom--xl"><header><h2 class="title_f1Hy"><a href="/spark-study/blog/week-1-spark-internals-tungsten-catalyst">1주차: Spark 내부 동작 원리 - 직렬화, Tungsten, Catalyst의 이해</a></h2><div class="container_mt6G margin-vert--md"><time datetime="2026-02-22T00:00:00.000Z">February 22, 2026</time> · <!-- -->5 min read</div><div class="margin-top--md margin-bottom--sm row"><div class="col col--12 authorCol_Hf19"><div class="avatar margin-bottom--sm"><a href="https://github.com/kwonyl14" target="_blank" rel="noopener noreferrer" class="avatar__photo-link"><img class="avatar__photo authorImage_XqGP" src="https://github.com/kwonyl14.png" alt="Kwon Younglin"></a><div class="avatar__intro authorDetails_lV9A"><div class="avatar__name"><a href="https://github.com/kwonyl14" target="_blank" rel="noopener noreferrer"><span class="authorName_yefp" translate="no">Kwon Younglin</span></a></div><small class="authorTitle_nd0D" title="Data Engineer">Data Engineer</small><div class="authorSocials_rSDt"></div></div></div></div></div></header><div class="markdown"><p>스파크(Spark) 강의를 보다가 어떤 두가지 df를 repartition(7), repartition(9)으로 만든 후 join을 시도하는 예제를 봤다. 성능과 관련없이 repartition할 때와 join할 때에 어떤 explain()이 이루어지는지 확인하는 예제였지만 실제로 join전에 repartition을 한 번 해준다면 비효율적인지 궁금해졌다.
 또한 최적화를 위해 텅스텐 엔진과 카탈리스트에 대한 이해가 필요해 이 글에서 설명한다.</p>
 <hr>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="1-조인join-전-repartitioning-과연-성능에-도움이-될까">1. 조인(Join) 전 Repartitioning, 과연 성능에 도움이 될까?<a href="#1-조인join-전-repartitioning-과연-성능에-도움이-될까" class="hash-link" aria-label="Direct link to 1. 조인(Join) 전 Repartitioning, 과연 성능에 도움이 될까?" title="Direct link to 1. 조인(Join) 전 Repartitioning, 과연 성능에 도움이 될까?" translate="no">​</a></h2>
 <p>1,000만 건의 데이터와 2,000만 건의 데이터를 조인(Join)해야 하는 상황을 가정해 보자. 이때 &quot;조인 전에 미리 <code>repartition(10)</code> 정도로 파티션을 잘게 또는 균등하게 쪼개두면 병렬 처리가 잘 돼서 빠르지 않을까?&quot;라고 생각할 수 도 있겠다.</p>
-<p>아래와 같은 상황에서 repartition은 효율적일까?</p>
-<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">  val ds1 = spark.range(1, 10000000)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val ds2 = spark.range(1, 20000000, 2)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val ds3 = ds1.repartition(7)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val ds4 = ds2.repartition(9)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val ds5 = ds3.selectExpr(&quot;id * 3 as id&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val joined = ds5.join(ds4, &quot;id&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val sum = joined.selectExpr(&quot;sum(id)&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  sum.explain()</span><br></span></code></pre></div></div>
-<p>직접 실행해본 결과 리파티션 코드를 빼고 join해보니 속도가 단축되었다.
-<img decoding="async" loading="lazy" alt="alt text" src="/spark-study/assets/images/image-70bd568beea0689beea7a5f8a9a68f17.png" width="3388" height="1078" class="img_ev3q"></p>
-<p>결론은 <strong>특별한 목적(Join Key 기반의 파티셔닝)이 없다면 조인 전의 단순한 repartition()은 성능을 높여주지 않는다.(오히려 낮아진다.)</strong></p>
+<p>결론부터 말하자면, <strong>특별한 목적(Join Key 기반의 파티셔닝)이 없다면 조인 전의 단순한 repartition()은 성능을 높여주지 않는다.</strong></p>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="조인과-셔플-파티션의-관계">조인과 셔플 파티션의 관계<a href="#조인과-셔플-파티션의-관계" class="hash-link" aria-label="Direct link to 조인과 셔플 파티션의 관계" title="Direct link to 조인과 셔플 파티션의 관계" translate="no">​</a></h3>
 <p>스파크에서 두 데이터를 조인할 때는 반드시 <strong>셔플(Shuffle)</strong> 이 발생한다. 스파크는 같은 조인 키(Key)를 가진 데이터를 같은 파티션(노드)으로 모으기 위해 데이터를 네트워크 너머로 재분배하는데, 이때 기본적으로 <code>spark.sql.shuffle.partitions</code> 설정값(기본값 200)에 따라 데이터를 200개의 파티션으로 쪼갠다.</p>
 <p>만약 조인 전에 <code>repartition(10)</code>을 한다면 스파크는 다음과 같이 동작한다.</p>
@@ -110,6 +988,83 @@
 <li class="">조인 연산 전 의미 없는 <code>repartition()</code>은 성능저하를 불러올 수 있다.</li>
 <li class="">스파크 코드를 짤 때는 무거운 객체를 만드는 RDD나 <code>ds.map()</code> 같은 람다 함수 사용을 피하고, 가급적 <strong>DataFrame의 내장 함수(DSL)를</strong> 사용해 직렬화를 피하는 것이 최적화 팁이다.</li>
 <li class="">스파크는 텅스텐(Whole-Stage CodeGen)과 카탈리스트(Pushdown)라는 빠른 자체 엔진을 가지고 있다. 불필요햐게 직렬화를 하지 않고 텅스텐 엔진을 최대한 활용하는 코드 작성하는 것이 필요하다.</li>
-</ol></div><footer class="row docusaurus-mt-lg"><div class="col"><b>Tags:</b><ul class="tags_jXut padding--none margin-left--sm"><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/spark">spark</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/scala">scala</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/optimization">optimization</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/tungsten">tungsten</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/catalyst">catalyst</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/serialization">serialization</a></li></ul></div></footer></article><nav class="pagination-nav" aria-label="Blog list page navigation"></nav></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Docs</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/spark-study/docs/intro">Tutorial</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Community</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://stackoverflow.com/questions/tagged/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">Stack Overflow<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="https://discordapp.com/invite/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">Discord<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="https://x.com/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">X<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">More</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/spark-study/blog">Blog</a></li><li class="footer__item"><a href="https://github.com/facebook/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2026 My Project, Inc. Built with Docusaurus.</div></div></div></footer></div>
+</ol></div><footer class="row docusaurus-mt-lg"><div class="col"><b>Tags:</b><ul class="tags_jXut padding--none margin-left--sm"><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/spark">spark</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/scala">scala</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/optimization">optimization</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/tungsten">tungsten</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/catalyst">catalyst</a></li><li class="tag_QGVx"><a rel="tag" class="tag_zVej tagRegular_sFm0" href="/spark-study/blog/tags/serialization">serialization</a></li></ul></div></footer></article><article class="margin-bottom--xl"><header><h2 class="title_f1Hy"><a href="/spark-study/blog/2026/02/19/warmup-907hza">Warmup</a></h2><div class="container_mt6G margin-vert--md"><time datetime="2026-02-19T00:00:00.000Z">February 19, 2026</time> · <!-- -->10 min read</div></header><div class="markdown"><ul>
+<li class="">
+<p><strong>개발 환경</strong></p>
+<ul>
+<li class="">
+<p>IntelliJ IDEA
+IntelliJ에서 SBT 프로젝트로 열기</p>
+<p><a href="https://github.com/rockthejvm/spark-performance-tuning/" target="_blank" rel="noopener noreferrer" class="">https://github.com/rockthejvm/spark-performance-tuning/</a></p>
+</li>
+<li class="">
+<p>Docker Desktop</p>
+</li>
+</ul>
+</li>
+<li class="">
+<p><strong>클러스터 빌드 및 실행</strong></p>
+<ol>
+<li class="">
+<p>터미널을 열고 spark-cluster 디렉토리로 이동</p>
+</li>
+<li class="">
+<p>build-images.sh 실행</p>
+<p>(bash가 없다면 파일을 열어 각 줄을 수동 실행)</p>
+</li>
+<li class="">
+<p>docker-compose up 실행</p>
+</li>
+</ol>
+</li>
+<li class="">
+<p><strong>Docker와 로컬 폴더 연결 구조</strong></p>
+<p>spark-cluster 디렉토리 내부의</p>
+<ul>
+<li class="">data 폴더 → 컨테이너 내부 /opt/spark-data</li>
+<li class="">apps 폴더 → 컨테이너 내부 /opt/spark-apps</li>
+</ul>
+<p>즉, 로컬 폴더가 Docker 컨테이너 내부 경로에 마운트된다.</p>
+</li>
+<li class="">
+<p><strong>Spark Shell 실행 방법</strong></p>
+<ol>
+<li class="">spark-cluster 디렉토리에서 : docker-compose up</li>
+<li class="">다른 터미널에서 : docker exec -it spark-cluster-spark-master-1 bash</li>
+<li class="">컨테이너 내부에서 : /spark/bin/spark-shell</li>
+</ol>
+</li>
+<li class="">
+<p><strong>강의 내용</strong></p>
+<p>단순 Spark 예제가 아니라 성능 튜닝 중심</p>
+<ul>
+<li class="">Query Plan 분석</li>
+<li class="">Spark UI DAG 분석</li>
+<li class="">Catalyst Optimizer 이해</li>
+<li class="">Tungsten 내부 동작</li>
+<li class="">Partitioning 및 Data Skew 문제</li>
+<li class="">Serialization 및 Kryo 설정</li>
+</ul>
+<p>즉, Spark 내부 구조와 실행 최적화에 초점을 둔 고급 과정이다.</p>
+</li>
+</ul>
+<hr>
+<ul>
+<li class="">
+<p><strong>환경 구성</strong></p>
+<p>![세 개의 worker 로 구성된 스파크 클러스터를 확인할 수 있다.]</p>
+<p>세 개의 worker 로 구성된 스파크 클러스터를 확인할 수 있다.</p>
+<p>![spark master 에 bash 로 접근해서 spark-shell 을 실행할 수 있다.]</p>
+<p>spark master 에 bash 로 접근해서 spark-shell 을 실행할 수 있다.</p>
+<p>스파크의 작업 메모리는 spark-cluster 폴더의 <code>docker-compose.yml</code> 파일에 아래와 같이 설정되어있다.</p>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">    environment:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      - SPARK_MASTER=spark://spark-master:7077</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      - SPARK_WORKER_CORES=1</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      - SPARK_WORKER_MEMORY=2G</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      - SPARK_DRIVER_MEMORY=256m</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      - SPARK_EXECUTOR_MEMORY=1G</span><br></span></code></pre></div></div>
+</li>
+</ul>
+<hr>
+<h1>Scala Recap</h1>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">package part1recap  // 이 파일이 속한 패키지(네임스페이스)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">import scala.concurrent.Future</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">import scala.util.{Failure, Success}</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">object ScalaRecap extends App {  // App을 상속하면 main 메서드 없이 실행 가능</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">// 내부적으로 App 트레잇이 main(args)를 만들어서 object 바디를 실행시킴</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">// object 는 파일이 로드되는 순간이 아니라, 처음 사용되는 순간 생성</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">//    (싱글톤) &lt;- JVM 에 하나만 존재 + 모두가 같은 인스턴스 공유  + new 불가</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">// class 는 new 할 때마다 새로운 객체가 생성</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 1. values and variables</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val aBoolean: Boolean = false</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // val : 불변(immutable) 값 &lt;-&gt; var : 가변 값</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 한 번 초기화되면 변경 불가, val 사용 권고</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  **// 함수형 프로그램의 목표 = 불변성 + 순수 함수**</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 2. expressions</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val anIfExpression = if(2 &gt; 3) &quot;bigger&quot; else &quot;smaller&quot;</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Scala에서 if는 표현식(expression)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 즉, 값을 반환함</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 2 &gt; 3 은 false이므로 결과는 &quot;smaller&quot;</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 자바와 달리 if가 값이 있다는 점이 중요</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 3. 명령(instructions) vs 표현(expressions)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val theUnit = println(&quot;Hello, Scala&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // println은 부수효과(side effect)를 일으키는 함수 / 반환 타입은 Unit</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 자바에서는 void 를 변수의 값으로 사용할 수 없는데, </span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 스칼라에서는 뭐든 반환을 할 수 있도록 해서 unit 을 반환 (void 반환 가능)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Unit은 &quot;의미 있는 값이 없음&quot;을 의미 (자바의 void와 유사)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 하지만 Scala에서는 Unit도 하나의 값 -&gt; val x: Unit = ()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 4. 함수(functions) 기본</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  def myFunction(x: Int) = 42</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // def는 함수 정의</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // x는 Int 타입</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 반환 타입은 생략했지만 Int로 추론됨</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 입력과 무관하게 항상 42 반환</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 5. 객체지향(OOP): class / extends / trait / mixin</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  class Animal</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 기본 클래스 정의</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  class Cat extends Animal</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Animal을 상속</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  trait Carnivore {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    def eat(animal: Animal): Unit</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  }</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // trait는 자바의 interface와 유사 / eat 메서드는 구현 없이 선언만 함</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  class Crocodile extends Animal with Carnivore {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    override def eat(animal: Animal): Unit = println(&quot;Crunch!&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  }</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // extends는 클래스 상속</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // with는 trait를 섞는(mixin) 것 / override 키워드로 trait의 메서드 구현</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 6. object(=singleton pattern)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  object MySingleton</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // object는 싱글톤</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 클래스 정의 + 인스턴스 1개를 동시에 생성</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 자바의 static 개념을 대체</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 7. 동반 객체(companions)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  trait Person(val name: String) // 타입(설계도)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    object Person { // 그 타입의 “정적 영역”처럼 쓰는 장소(팩토리 메서드, 상수 등)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      def apply(name: String) = new Person(name)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    }</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // trait Person와 이름이 같음 </span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 같은 파일에 있으면 companion 관계</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // companion object는 정적 영역처럼 사용됨</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 8. generics</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  trait MyList[A]</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // A는 타입 파라미터</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 제네릭 타입 정의</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 자바의 List&lt;T&gt;와 유사</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 9. 메서드 표기법: 연산자도 메서드다</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val x = 1 + 2</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 일반적인 연산자 표기</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val y = 1.+(2)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 사실 +는 메서드</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 1 + 2는 1.+(2)의 문법 설탕(syntax sugar)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 10. 함수형 프로그래밍: 함수는 값이다</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  **val incrementer: Int =&gt; Int = x =&gt; x + 1**</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Int =&gt; Int 는 함수 타입</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // x =&gt; x + 1 은 람다(익명 함수)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 함수도 값으로 다룰 수 있음</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val incremented = incrementer(42)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 함수 호출</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 결과는 43</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 11. map, flatMap, filter</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val processedList = List(1,2,3).map(incrementer)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // **map은 각 요소에 함수를 적용**</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 결과: List(2,3,4)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 원본 리스트는 변경되지 않음 (immutable)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 12. Pattern Matching</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val unknown: Any = 45</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Any는 모든 타입의 최상위 타입</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val ordinal = unknown match {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    case 1 =&gt; &quot;first&quot;</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    case 2 =&gt; &quot;second&quot;</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    case _ =&gt; &quot;unknown&quot;</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  }</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // match는 switch보다 강력한 패턴 매칭</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // _ 는 default 케이스</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // unknown은 45이므로 결과: &quot;unknown&quot;</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // spark 에서 패턴 매칭이 자주 사용되는 이유 : 옵션 처리, 타입별 분기, ADT(Sealed trait) 처리 등</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 13. try-catch (표현식)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  try {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    throw new NullPointerException</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  } catch {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    case _: NullPointerException =&gt; &quot;some returned value&quot;</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    case _: Throwable =&gt; &quot;something else&quot;</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  }</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // try-catch도 표현식</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 예외 타입에 따라 값 반환 가능</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 여기서는 NPE 발생 → &quot;some returned value&quot;</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 그리고 해당하는 조건 하나만 무조건 탐 &lt;- break 필요 없음</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 14. Future (비동기)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  import scala.concurrent.ExecutionContext.Implicits.global</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Future 실행에 필요한 스레드 풀 제공 -&gt; **global은 기본 스레드 풀 제공**</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val aFuture = Future {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // 다른 스레드에서 실행되는 블록</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    42</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  }</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // aFuture는 Future[Int]</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  aFuture.onComplete {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    case Success(meaningOfLife) =&gt;</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      println(s&quot;I&#x27;ve found $meaningOfLife&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    case Failure(ex) =&gt;</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      println(s&quot;I have failed: $ex&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  }</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // onComplete 은 Future 완료 시의 콜백</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 성공이면 Success / 실패하면 Failure</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 15. 부분 함수(Partial functions)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val aPartialFunction: PartialFunction[Int, Int] = {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    case 1 =&gt; 43</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    case 8 =&gt; 56</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    case _ =&gt; 999</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  }</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // PartialFunction은 일부 입력에만 정의될 수 있는 함수</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 여기서는 _ =&gt; 999가 있어서 사실상 모든 입력 처리</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 만약 1/8 조건만 있었을 경우, 1/8만 처리하는 거라 부분 함수겠지만, _가 전체 함수 역할</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 16. 암시적 기능(Implicits)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 16-1. 암시적 인자(implicit parameter)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  def methodWithImplicitArgument(implicit x: Int) = x + 43</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // implicit 키워드가 붙은 파라미터는</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 호출 시 자동으로 주입될 수 있음</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  implicit val implicitInt = 67</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 스코프 내에 implicit Int 정의</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val implicitCall = methodWithImplicitArgument</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 명시적으로 인자를 넘기지 않았지만</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // implicitInt가 자동으로 전달됨</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 결과: 67 + 43 = 110</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 16-2. implicit conversion (implicit def)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  case class Person(name: String) {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    def greet = println(s&quot;Hi, my name is $name&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  }</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // case class는 자동으로 equals, toString, apply 등 생성</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  implicit def fromStringToPerson(name: String) = Person(name)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // String을 Person으로 암시적 변환</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  &quot;Bob&quot;.greet</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 원래 String에는 greet가 없음</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 컴파일러가 fromStringToPerson(&quot;Bob&quot;)로 변환 후 greet 호출</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 16-3. 확장 메서드(implicit class)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  implicit class Dog(name: String) {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    def bark = println(&quot;Bark!&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  }</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // String에 bark 메서드를 추가한 것처럼 동작</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  &quot;Lassie&quot;.bark</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  /*</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    implicit 탐색 범위</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    - local scope (현재 스코프)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    - imported scope (import된 영역)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    - companion objects of the types involved</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      (관련 타입의 companion object 내부)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    컴파일러는 이 순서로 implicit을 탐색함</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">   */</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">}</span><br></span></code></pre></div></div>
+<hr>
+<h1>Spark Recap</h1>
+<div class="language-scala codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-scala codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">package part1recap</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">// 패키지 선언</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">import org.apache.spark.rdd.RDD</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">// Spark의 저수준 API인 RDD 타입을 쓰기 위한 import</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">import org.apache.spark.sql.SparkSession</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">// Spark SQL/Structured API의 진입점인 SparkSession</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">import org.apache.spark.sql.functions._</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">// col, expr, avg 같은 컬럼/함수 유틸을 쓰기 위한 import</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">// (언더스코어 * 처럼 모든 함수를 가져오는 방식)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">object SparkRecap {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // object: 싱글톤. 이 파일에서 Spark 관련 코드를 담는 실행 단위</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // (여기서는 main이 아래에 있으므로, main 실행 시점에 프로그램이 시작됨)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 1) SparkSession 생성</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Spark structured API 의 entry point</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val spark = SparkSession.builder()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // SparkSession을 설정하는 빌더(builder) 패턴 시작</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .appName(&quot;Spark Recap&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // 애플리케이션 이름(로그/웹 UI 등에서 보임)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .master(&quot;local[2]&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // 실행 모드 지정</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // -&gt; local[2] = 로컬 머신에서 쓰레드 2개로 실행(로컬 테스트용)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    //    실제 클러스터면 여기가 달라짐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .getOrCreate()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // 기존에 같은 설정으로 떠 있는 SparkSession이 있으면 재사용, 없으면 새로 생성</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 2) DataFrame 읽기 (cars)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // read a DF</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val cars = spark.read</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // DataFrameReader: 다양한 포맷(JSON/CSV/Parquet 등) 읽는 진입점</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .format(&quot;json&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // 읽을 파일 포맷 지정</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .option(&quot;inferSchema&quot;, &quot;true&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // 스키마를 자동 추론하도록 설정(느릴 수 있음, 운영에서는 스키마 명시 권장)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .load(&quot;src/main/resources/data/cars&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // 파일/폴더 경로에서 로드</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // JSON은 보통 &quot;폴더&quot;를 주면 그 안의 파일들을 읽음</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 3) spark.implicits import</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  import spark.implicits._</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Spark의 암시적 기능(implicits)을 가져옴 &lt;- 컴파일러가 자동으로 해주는 변환</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 대표적으로</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // - $&quot;colName&quot; 문법(컬럼을 Column 객체로)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // - toDF, toDS, as[T] 같은 변환</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // - Dataset Encoder (JVM 객체 ↔ Spark 내부 Row 변환기) 자동 생성</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 이런 기능들이 활성화됨</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 4) select (컬럼 선택/변환)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // select</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val usefulCarsData = cars.select(</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    col(&quot;Name&quot;), // column object</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    $&quot;Year&quot;, // another column object (needs spark implicits)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    (col(&quot;Weight_in_lbs&quot;) / 2.2).as(&quot;Weight_in_kg&quot;),</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    expr(&quot;Weight_in_lbs / 2.2&quot;).as(&quot;Weight_in_kg_2&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  )</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // col(&quot;Name&quot;)은 Column 객체를 만들기 위한 함수 &lt;- functions._ import 덕분에 사용 가능</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // $&quot;Year&quot;는 spark.implicits._ 가 있어야 가능한 문법 &lt;- 문자열을 Column으로 바꿔주는 확장 문법</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Weight_in_lbs 컬럼을 2.2로 나눠서 kg로 바꾸고 &lt;- 결과 컬럼 이름을 Weight_in_kg로 지정</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // expr는 SQL 문자열 표현식을 Column으로 해석해줌 &lt;- 같은 계산이지만 &quot;문자열 SQL&quot;로 적는 방식</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val carsWeights = cars.selectExpr(&quot;Weight_in_lbs / 2.2&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // selectExpr는 여러 개의 SQL 표현식을 문자열로 넘길 수 있는 select의 변형</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 결과는 DataFrame(스키마 기반)이며 컬럼 이름은 표현식 기반으로 자동 생성될 수 있음</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 5) filter / where</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // filter</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val europeanCars = cars.where(col(&quot;Origin&quot;) =!= &quot;USA&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // where는 filter와 거의 동일</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =!= 는 &quot;같지 않다&quot; 연산(컬럼 비교용)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 즉 Origin이 USA가 아닌 행만 남김</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 6) aggregations (집계)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // aggregations</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val averageHP = cars.select(avg(col(&quot;Horsepower&quot;)).as(&quot;average_hp&quot;))</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // avg로 Horsepower 평균을 구하고 컬럼명을 average_hp로</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // (주석의 sum, mean, stddev, min, max 등도 같은 계열 집계 함수)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 7) grouping (groupBy)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // grouping</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val countByOrigin = cars</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .groupBy(col(&quot;Origin&quot;)) // a RelationalGroupedDataset</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // groupBy 결과는 &quot;그룹 연산을 할 수 있는 중간 객체&quot; (RelationalGroupedDataset)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .count()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // 그룹별 레코드 개수 집계</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // 결과는 Origin별 count 컬럼을 가진 DataFrame</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 8) join (조인)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // joining</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val guitarPlayers = spark.read</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .option(&quot;inferSchema&quot;, &quot;true&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .json(&quot;src/main/resources/data/guitarPlayers&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // format(&quot;json&quot;) 대신 .json(path) 단축 사용 가능</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val bands = spark.read</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .option(&quot;inferSchema&quot;, &quot;true&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    .json(&quot;src/main/resources/data/bands&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val guitaristsBands = guitarPlayers.join(</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    bands,</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    guitarPlayers.col(&quot;band&quot;) === bands.col(&quot;id&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  )</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // join 조건</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // guitarPlayers의 band 컬럼 == bands의 id 컬럼</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // === 는 Column 간 &quot;같다&quot; 비교(동등 비교)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 기본 join type은 inner join</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  /*</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    join types</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    - inner: only the matching rows are kept</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      (매칭되는 행만 유지)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    - left/right/full outer join</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      (한쪽/양쪽 모두의 미매칭도 포함)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    - semi/anti</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      (존재 여부만 필터링: semi는 매칭 있는 쪽만, anti는 매칭 없는 쪽만)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">   */</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 9) Dataset (타입 있는 분산 컬렉션)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // datasets = typed distributed collection of objects</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  case class GuitarPlayer(id: Long, name: String, guitars: Seq[Long], band: Long)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Dataset에서 사용될 타입(스키마)을 case class로 정의</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // case class는 자동으로 생성자/equals/toString 등 제공</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val guitarPlayersDS = guitarPlayers.as[GuitarPlayer] // needs spark.implicits</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // DataFrame(스키마 기반 Row 컬렉션) -&gt; Dataset[GuitarPlayer] (타입 기반)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 여기서 Encoder가 필요하며 spark.implicits._ 가 있어야 자동 제공되는 경우가 많음</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  guitarPlayersDS.map(_.name)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Dataset은 타입이 있으니 map에서 Row가 아니라 GuitarPlayer 객체로 다룸</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // _.name은 GuitarPlayer의 name 필드를 뽑음</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 결과는 Dataset[String]</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 10) Spark SQL (SQL로 조회)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Spark SQL</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  cars.createOrReplaceTempView(&quot;cars&quot;)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // DataFrame을 임시 뷰로 등록</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 세션(spark) 범위에서만 유효한 &quot;임시 테이블&quot; 같은 개념</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val americanCars = spark.sql(</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    &quot;&quot;&quot;</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      |select Name from cars where Origin = &#x27;USA&#x27;</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    &quot;&quot;&quot;.stripMargin</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  )</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // spark.sql로 SQL 문자열 실행</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // stripMargin은 멀티라인 문자열에서 | 기준으로 들여쓰기 제거</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 결과는 DataFrame</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 11) 저수준 API: RDD</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // low-level API: RDDs</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val sc = spark.sparkContext</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // SparkContext는 Spark의 기본 컨텍스트(클러스터 연결, RDD 생성 등)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // SparkSession 안에 포함되어 있음</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val numbersRDD: RDD[Int] = sc.parallelize(1 to 1000000)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 1~1,000,000 범위를 RDD[Int]로 병렬화</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // parallelize는 드라이버에 있는 컬렉션을 분산 데이터로 만드는 방식(테스트용으로 좋음)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 대규모 운영 데이터는 보통 파일/테이블에서 읽어 생성</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // functional operators</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val doubles = numbersRDD.map(_ * 2)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // RDD의 map 변환: 각 요소에 *2</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 결과는 새로운 RDD[Int]</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // (RDD 변환도 lazy: action이 실행되기 전까지 실제 계산 안 됨)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 12) RDD &lt;-&gt; DF/DS 변환</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // RDD -&gt; DF</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val numbersDF = numbersRDD.toDF(&quot;number&quot;) // you lose type info, you get SQL capability</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // RDD[Int]를 DataFrame으로 변환</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // DataFrame은 내부적으로 Dataset[Row]라서 &quot;타입 정보&quot;는 Row로 일반화됨(타입 안전성 감소)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 대신 Spark SQL 기능(컬럼 연산, 최적화, SQL)이 강력해짐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // toDF는 spark.implicits._ 필요</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // RDD -&gt; DS</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val numbersDS = spark.createDataset(numbersRDD)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // RDD[Int] -&gt; Dataset[Int]</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Dataset은 타입을 유지하면서도 최적화(SQL 플래너) 일부 혜택을 받을 수 있음</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // (단, Dataset은 Scala/Java 쪽에서 주로 쓰고 PySpark는 보통 DataFrame 중심)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // DS -&gt; RDD</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val guitarPlayersRDD = guitarPlayersDS.rdd</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Dataset[GuitarPlayer] -&gt; RDD[GuitarPlayer]</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 저수준 API로 내려가고 싶을 때 사용</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // DF -&gt; RDD</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  val carsRDD = cars.rdd // RDD[Row]</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // DataFrame -&gt; RDD[Row]</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // Row는 스키마 기반의 일반 레코드(컬럼을 인덱스/이름으로 접근)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // 13) main: 실행 진입점</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  // =========================</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  def main(args: Array[String]): Unit = {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // showing a DF to the console</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    cars.show()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // DataFrame을 콘솔에 출력 (기본 20행, truncate 옵션 등 있음)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    cars.printSchema()</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    // DataFrame 스키마 출력 (컬럼명/타입/nullable 여부)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  }</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">}</span><br></span></code></pre></div></div></div><footer class="row docusaurus-mt-lg"></footer></article><nav class="pagination-nav" aria-label="Blog list page navigation"></nav></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Docs</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/spark-study/docs/intro">Tutorial</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Community</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://stackoverflow.com/questions/tagged/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">Stack Overflow<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="https://discordapp.com/invite/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">Discord<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="https://x.com/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">X<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">More</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/spark-study/blog">Blog</a></li><li class="footer__item"><a href="https://github.com/facebook/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2026 My Project, Inc. Built with Docusaurus.</div></div></div></footer></div>
 </body>
 </html>
