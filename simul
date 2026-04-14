@@ -1,0 +1,60 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
+# 1. 데이터 생성 (조건에 맞게)
+large = np.random.uniform(95, 100, 2)       # 95MB 이상 2개
+medium = np.random.uniform(1, 95, 33)      # 1MB ~ 95MB 33개
+small = np.random.uniform(0.1, 1, 15)      # 1MB 미만 15개
+
+original_data = np.concatenate([large, medium, small])
+np.random.shuffle(original_data) # 초기에는 무작위로 섞음
+
+# 내림차순 정렬 (Greedy 효율을 위해 정렬 후 처리)
+sorted_data = sorted(original_data, reverse=True)
+
+# 2. 파티션 설정
+num_partitions = 10
+partitions = [[] for _ in range(num_partitions)]
+partition_sums = [0.0] * num_partitions
+
+# 시각화 준비
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 7))
+fig.suptitle("Data Partitioning: Greedy Algorithm Visualization", fontsize=16)
+
+def update(frame):
+    ax1.clear()
+    ax2.clear()
+    
+    # 왼쪽: 원본/대기 데이터 블록
+    remaining = sorted_data[frame:]
+    ax1.bar(range(len(remaining)), remaining, color='skyblue', edgecolor='black')
+    ax1.set_title(f"Pending Data (Sorted Descending)\nNext: {sorted_data[frame]:.2f} MB" if frame < 50 else "All Dispatched")
+    ax1.set_ylim(0, 110)
+    ax1.set_ylabel("Size (MB)")
+
+    # Greedy 알고리즘 핵심: 현재 가장 합계가 작은 파티션 찾기
+    if frame < 50:
+        current_val = sorted_data[frame]
+        min_idx = partition_sums.index(min(partition_sums))
+        partitions[min_idx].append(current_val)
+        partition_sums[min_idx] += current_val
+
+    # 오른쪽: 10개 파티션 현황 (Stack bar 형태)
+    partition_labels = [f"P{i+1}" for i in range(num_partitions)]
+    
+    for i in range(num_partitions):
+        bottom = 0
+        for val in partitions[i]:
+            ax2.bar(partition_labels[i], val, bottom=bottom, color=plt.cm.viridis(val/100), edgecolor='white', linewidth=0.5)
+            bottom += val
+    
+    ax2.set_title("10 Partitions (Greedy Fill)")
+    ax2.set_ylim(0, max(partition_sums + [100]) * 1.1)
+    ax2.set_ylabel("Total Capacity (MB)")
+
+# 애니메이션 실행 (frames=50은 데이터 개수)
+ani = FuncAnimation(fig, update, frames=51, repeat=False, interval=200)
+
+plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+plt.show()
