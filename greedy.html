@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Greedy Data Partitioning Simulation</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --accent: #F5A623;
+            --bg: #f8f9fa;
+        }
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; background: var(--bg); }
+        .controls { margin: 20px; display: flex; gap: 10px; }
+        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 5px; background: var(--primary); color: white; font-weight: bold; }
+        button:hover { opacity: 0.9; }
+        
+        .container { display: flex; gap: 100px; align-items: flex-end; height: 500px; padding: 50px; }
+        
+        /* 원기둥 통 디자인 */
+        .source-container {
+            width: 120px;
+            height: 400px;
+            border: 3px solid #666;
+            border-top: none;
+            border-radius: 0 0 60px 60px;
+            position: relative;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            background: rgba(255,255,255,0.5);
+            padding-bottom: 20px;
+        }
+        .source-container::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            width: 120px;
+            height: 30px;
+            border: 3px solid #666;
+            border-radius: 50%;
+            background: #eee;
+        }
+
+        /* 데이터 유닛 */
+        .data-unit {
+            width: 80px;
+            height: 12px;
+            background: var(--accent);
+            border: 1px solid #d48806;
+            margin-bottom: 2px;
+            border-radius: 4px;
+            transition: all 0.5s ease-in-out;
+            z-index: 10;
+        }
+
+        /* 파티션 레이아웃 */
+        .partitions { display: flex; gap: 10px; }
+        .partition {
+            width: 50px;
+            height: 250px;
+            border: 2px dashed #999;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            position: relative;
+        }
+        .partition-label { position: absolute; bottom: -25px; font-size: 12px; color: #666; }
+        .partition .data-unit { width: 40px; height: 10px; }
+
+        /* 애니메이션용 객체 */
+        #flying-unit {
+            position: fixed;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Greedy 알고리즘 데이터 분산 시뮬레이션</h2>
+    
+    <div class="controls">
+        <button onclick="initData()">데이터 초기화 (Random)</button>
+        <button onclick="sortData()">내림차순 정렬</button>
+        <button id="startBtn" onclick="startGreedy()">시작 (Greedy Start)</button>
+    </div>
+
+    <div class="container">
+        <div>
+            <div id="source" class="source-container"></div>
+            <p style="text-align: center; font-weight: bold;">Raw Data (원기둥)</p>
+        </div>
+
+        <div>
+            <div id="partitions" class="partitions"></div>
+            <p style="text-align: center; font-weight: bold;">Partitions (Target)</p>
+        </div>
+    </div>
+
+    <div id="flying-unit" class="data-unit"></div>
+
+    <script>
+        const SOURCE_COUNT = 50;
+        const PARTITION_COUNT = 10;
+        let dataList = [];
+        let partitionStates = Array(PARTITION_COUNT).fill(0);
+
+        function initData() {
+            dataList = Array.from({length: SOURCE_COUNT}, () => Math.floor(Math.random() * 100) + 1);
+            renderSource();
+            renderPartitions();
+            document.getElementById('startBtn').disabled = false;
+        }
+
+        function renderSource() {
+            const sourceDiv = document.getElementById('source');
+            sourceDiv.innerHTML = '';
+            dataList.forEach((val, idx) => {
+                const unit = document.createElement('div');
+                unit.className = 'data-unit';
+                unit.id = `unit-${idx}`;
+                sourceDiv.appendChild(unit);
+            });
+        }
+
+        function renderPartitions() {
+            const partContainer = document.getElementById('partitions');
+            partContainer.innerHTML = '';
+            partitionStates = Array(PARTITION_COUNT).fill(0);
+            for(let i=0; i<PARTITION_COUNT; i++) {
+                const p = document.createElement('div');
+                p.className = 'partition';
+                p.id = `part-${i}`;
+                const label = document.createElement('span');
+                label.className = 'partition-label';
+                label.innerText = `P-${i}`;
+                p.appendChild(label);
+                partContainer.appendChild(p);
+            }
+        }
+
+        function sortData() {
+            dataList.sort((a, b) => b - a);
+            renderSource();
+        }
+
+        async function startGreedy() {
+            document.getElementById('startBtn').disabled = true;
+            const units = document.querySelectorAll('#source .data-unit');
+            
+            // 위에서부터 하나씩 꺼내기 위해 역순 탐색
+            for (let i = units.length - 1; i >= 0; i--) {
+                const unit = units[i];
+                
+                // Greedy 로직: 현재 가장 데이터가 적게 쌓인 파티션 찾기
+                const targetIdx = partitionStates.indexOf(Math.min(...partitionStates));
+                
+                await moveAnimation(unit, targetIdx);
+                
+                // 실제 파티션에 데이터 추가
+                const newUnit = document.createElement('div');
+                newUnit.className = 'data-unit';
+                document.getElementById(`part-${targetIdx}`).appendChild(newUnit);
+                partitionStates[targetIdx]++;
+                
+                unit.style.visibility = 'hidden';
+                await new Promise(r => setTimeout(r, 100)); // 다음 동작 대기
+            }
+        }
+
+        function moveAnimation(sourceElem, targetIdx) {
+            return new Promise(resolve => {
+                const fly = document.getElementById('flying-unit');
+                const targetPart = document.getElementById(`part-${targetIdx}`);
+                
+                const startRect = sourceElem.getBoundingClientRect();
+                const endRect = targetPart.getBoundingClientRect();
+
+                fly.style.display = 'block';
+                fly.style.left = startRect.left + 'px';
+                fly.style.top = startRect.top + 'px';
+                fly.style.width = startRect.width + 'px';
+
+                // 애니메이션 프레임
+                setTimeout(() => {
+                    fly.style.left = endRect.left + 5 + 'px';
+                    // 파티션 내부 쌓이는 높이 계산 (대략)
+                    fly.style.top = (endRect.bottom - (partitionStates[targetIdx] * 12) - 20) + 'px';
+                    fly.style.width = '40px';
+                }, 10);
+
+                setTimeout(() => {
+                    fly.style.display = 'none';
+                    resolve();
+                }, 500);
+            });
+        }
+
+        // 초기화 실행
+        initData();
+    </script>
+</body>
+</html>
