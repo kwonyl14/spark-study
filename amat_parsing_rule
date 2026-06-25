@@ -1,0 +1,95 @@
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class SvdLogParser {
+
+    // 정규식 컴파일 (재사용을 위해 static final 선언)
+    private static final String REGEX = "^(\\d{4}-\\d{2}-\\d{2})_(\\d{2}-\\d{2}-\\d{2})_([A-Za-z0-9]*)_([A-Za-z0-9]*)_(.+)_Step(\\d{2})\\.svd$";
+    private static final Pattern PATTERN = Pattern.compile(REGEX);
+
+    public static void parseFilename(String filename) {
+        Matcher matcher = PATTERN.matcher(filename);
+
+        if (!matcher.matches()) {
+            System.out.println("[형식 오류] 정해진 파일명 포맷과 일치하지 않습니다: " + filename);
+            return;
+        }
+
+        // 1. 정규식 그룹 데이터 추출
+        String date = matcher.group(1);
+        String time = matcher.group(2);
+        String lotInfo = matcher.group(3); // 6자리숫자 + lotId (빈값 가능)
+        String slotId = matcher.group(4);  // (빈값 가능)
+        String recipeId = matcher.group(5);
+        String stepId = matcher.group(6);
+
+        // 2. 공정 분류 (Clean vs Process)
+        boolean isClean = recipeId.contains("ICC") || recipeId.contains("PRE");
+
+        try {
+            // 3. 비즈니스 로직 검증
+            if (isClean) {
+                // --- Clean 규칙 검증 ---
+                if (!lotInfo.isEmpty()) {
+                    throw new IllegalArgumentException("Clean 공정은 6자리숫자+lotId 칸이 비어있어야 합니다.");
+                }
+                if (!slotId.isEmpty() && !slotId.equals("00")) {
+                    throw new IllegalArgumentException("Clean 공정의 slotId는 빈 값이거나 '00'이어야 합니다. (입력값: " + slotId + ")");
+                }
+            } else {
+                // --- Process 규칙 검증 ---
+                if (lotInfo.isEmpty() || slotId.isEmpty()) {
+                    throw new IllegalArgumentException("Process 공정은 6자리숫자+lotId 와 slotId 칸이 비어있을 수 없습니다.");
+                }
+            }
+
+            // 4. LotInfo 상세 분리 (비어있지 않은 경우에만)
+            String lotNumber = "";
+            String lotId = "";
+            if (!lotInfo.isEmpty()) {
+                if (lotInfo.length() >= 6) {
+                    lotNumber = lotInfo.substring(0, 6); // 무조건 앞 6자리는 숫자
+                    lotId = lotInfo.substring(6);        // 나머지는 lotId
+                } else {
+                    throw new IllegalArgumentException("LotInfo 형식이 잘못되었습니다 (최소 6자리 숫자 필요). 입력값: " + lotInfo);
+                }
+            }
+
+            // 5. 파싱 결과 출력 (성공)
+            System.out.println("=== 파싱 성공: " + filename + " ===");
+            System.out.println("Category : " + (isClean ? "Clean" : "Process"));
+            System.out.println("Date     : " + date);
+            System.out.println("Time     : " + time);
+            System.out.println("LotNum   : " + (lotNumber.isEmpty() ? "(Empty)" : lotNumber));
+            System.out.println("LotID    : " + (lotId.isEmpty() ? "(Empty)" : lotId));
+            System.out.println("SlotID   : " + (slotId.isEmpty() ? "(Empty)" : slotId));
+            System.out.println("RecipeID : " + recipeId);
+            System.out.println("StepID   : " + stepId);
+            System.out.println();
+
+        } catch (IllegalArgumentException e) {
+            System.err.println("[논리 오류] " + filename + " -> " + e.getMessage());
+            System.out.println();
+        }
+    }
+
+    public static void main(String[] args) {
+        // [테스트 케이스 1] Process 정상 케이스
+        parseFilename("2026-06-24_14-07-51_1306195NADT44_04_NA_SLIM2_R01_M15_C2_Step10.svd");
+        
+        // [테스트 케이스 2] Clean 정상 케이스 (slotId 00)
+        parseFilename("2026-06-24_14-07-51__00_ICC_SLIM2_R01_M15_C2_Step10.svd");
+        
+        // [테스트 케이스 3] Clean 정상 케이스 (slotId 빈칸)
+        parseFilename("2026-06-24_14-07-51___ICC_SLIM2_R01_M15_C2_Step10.svd");
+
+        // [테스트 케이스 4] Clean 정상 케이스 (ICC가 중간에 위치, slotId 00)
+        parseFilename("2026-06-24_14-07-51__00_SLIM2_ICC_R01_M15_C2_Step10.svd");
+
+        // [테스트 케이스 5] 오류 케이스 (Process인데 Lot 정보가 비어있음)
+        parseFilename("2026-06-24_14-07-51___04_NA_SLIM2_R01_M15_C2_Step10.svd");
+        
+        // [테스트 케이스 6] 오류 케이스 (Clean인데 slotId가 00이 아닌 다른 숫자임)
+        parseFilename("2026-06-24_14-07-51__04_ICC_SLIM2_R01_M15_C2_Step10.svd");
+    }
+}
