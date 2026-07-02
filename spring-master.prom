@@ -1,0 +1,14 @@
+역할: 시니어 Java/Kubernetes 아키텍트
+
+목표: Go 기반의 K8s/Spark 인프라 관리 도구 4종을 Spring Boot로 마이그레이션하기 위한 기본 Gradle 멀티 모듈 프로젝트 구조를 생성합니다.
+
+제약 조건:
+- 빌드 도구: Gradle (Kotlin DSL 추천)
+- Java 버전: JDK 17 혹은 21
+- K8s 연동: io.fabric8:kubernetes-client 최신 안정 버전 사용
+- 메트릭: Spring Boot Actuator 및 Micrometer Prometheus Registry 사용
+
+작업 순서:
+1. 루트 디렉토리에 공통 인프라 설정(K8s Client Bean, Prometheus Endpoint 활성화)을 담은 `core` 모듈의 build.gradle.kts와 기본 Configuration 클래스를 작성하세요.
+2. 나머지 4개 서브 모듈(api-server, proxy-server, spark-metric-exporter, event-exporter)의 디렉토리 구조와 빈 build.gradle.kts 파일을 생성하세요.
+3. 생성이 완료되면 구조를 보고하고 대기하십시오.
