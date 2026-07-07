@@ -1,0 +1,38 @@
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 프론트엔드 (사용자)
+    participant API as Spring API 서버
+    participant MinIO as MinIO 스토리지
+    participant K8s as K8s (Spark CRD)
+    participant Engine as Trino / Iceberg
+
+    rect rgb(240, 245, 255)
+        Note over User, MinIO: [1단계] Presigned URL 기반 파일 업로드
+        User->>API: 1. 파일 업로드 요청 (메타데이터 전달)
+        API->>User: 2. Presigned URL 발급 (제한시간 서명)
+        User->>MinIO: 3. MinIO로 파일 직접 업로드 (API 서버 부하 Zero)
+    end
+
+    rect rgb(245, 255, 240)
+        Note over User, K8s: [2단계] 분석 트리거 및 비동기 처리 (대기 제거)
+        User->>API: 4. 분석 시작 요청 (Trigger)
+        API->>User: 5. 즉시 응답 반환 (200 OK / 화면 대기 해제)
+        API->>K8s: 6. SparkApplication CRD 제출
+    end
+
+    rect rgb(255, 245, 240)
+        Note over API, Engine: [3단계] 백그라운드 모니터링 및 알림
+        K8s->>Engine: 7. Spark 분석 수행 및 Iceberg 결과 적재
+        API->>K8s: 8. K8s Informer로 파드 상태 실시간 감지 (Watch)
+        Note over API: Spark 작업 완료 감지 (COMPLETED)
+        API->>User: 9. 사내 메신저로 완료 알림 발송
+    end
+
+    rect rgb(250, 250, 250)
+        Note over User, Engine: [4단계] 결과 데이터 조회
+        User->>API: 10. 결과 조회 요청 (알림 확인 후 진입)
+        API->>Engine: 11. Trino를 통해 Iceberg 데이터 쿼리
+        Engine->>API: 12. 결과 데이터 반환
+        API->>User: 13. 화면에 최종 분석 결과 표출
+    end
