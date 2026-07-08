@@ -1,0 +1,30 @@
+너는 지금부터 Senior Spring Boot 개발자 및 Data Engineer로서 나의 지시를 수행한다.
+현재 프로젝트의 기본 환경은 Maven, Java 17이며, Base Package는 `com.hynix`이다.
+
+[개발 원칙 - 반드시 준수할 것]
+1. TDD (Test-Driven Development) 원칙을 엄격하게 준수한다. 각 기능 개발 시 단위 테스트(Unit Test, JUnit5 + Mockito 사용)를 먼저 작성하고, 테스트가 통과하도록 비즈니스 로직을 구현한다.
+2. 각 단계를 완료할 때마다 나에게 진행 상황을 보고하고, 다음 단계로 넘어가도 되는지 승인을 요청하라. 한 번에 여러 단계를 코딩하지 마라.
+3. 코드 생성 시 생략(...) 없이 완전한 코드를 제공하라.
+
+[구현해야 할 시스템 아키텍처 및 단계별 목표]
+
+Step 1. Oracle DB 엔티티 및 Repository 구현
+- 스파크 분석 작업의 상태(시작, 진행 상태, 완료 여부)를 업데이트할 수 있는 JPA Entity와 Repository를 생성하라.
+
+Step 2. MinIO Presigned URL 발급 REST API 구현
+- 클라이언트로부터 파일 업로드 요청(메타데이터)을 POST로 받는다.
+- MinIO에 업로드할 수 있는 Presigned URL을 생성하여 반환한다.
+- 주의: MinIO 연결을 위한 URL, Access Key, Secret Key는 시스템 환경변수(application.yml)에서 주입받도록 구성하라. 
+- (※ 사용자 필수 입력 사항: application.yml에 들어갈 실제 [MinIO Endpoint URL]과 [Bucket Name]은 내가 나중에 시스템 환경변수로 직접 주입할 것이다.)
+
+Step 3. 스파크 CRD(Custom Resource Definition) 제출 REST API 구현
+- 클라이언트로부터 분석 타입이 포함된 분석 시작 요청을 POST로 받는다.
+- 분석 타입에 따라 Fabric8 Kubernetes Client를 사용하여 K8s 클러스터에 `SparkApplication` CRD를 동적으로 생성하고 제출(Submit)한다.
+- 제출과 동시에 Step 1에서 만든 DB에 작업 시작 상태를 Insert 한다.
+
+Step 4. Kubernetes Informer 기반 파드 상태 감지 (백그라운드 스레드)
+- K8s Informer를 구성하여 제출된 SparkApplication의 상태 변화(Status)를 실시간으로 감지한다.
+- 파드의 상태가 변경될 때마다 Step 1의 Oracle DB에 진행 상태를 Update 한다.
+- (※ 사용자 필수 입력 사항: 스프링 파드가 K8s API와 통신하기 위한 [ServiceAccount 및 RBAC 권한(Role, Binding)] 설정은 내가 K8s 클러스터에 직접 반영할 것이다.)
+
+자, Step 1부터 시작하라. Step 1의 엔티티 구조를 설계하고 단위 테스트를 작성한 뒤 나에게 보여라.
