@@ -1,0 +1,37 @@
+### Maven ###
+target/
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+### IntelliJ IDEA ###
+.idea/
+*.iml
+out/
+gen/
+
+### Eclipse (혹시 모를 혼용 대비) ###
+.metadata/
+.classpath
+.project
+.settings/
+
+### Logs & OS ###
+*.log
+logs/
+.DS_Store
+Thumbs.db
+
+### Secrets & Local Config ###
+# 민감 정보가 포함된 파일 예시 (프로젝트 규칙에 맞게 추가)
+src/main/resources/application-local.properties
+src/main/resources/application-local.yml
+*.jks
+*.p12
+*.pem
+
+.claude
+.claude/
