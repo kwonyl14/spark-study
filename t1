@@ -1,0 +1,80 @@
+# Role & Goal
+당신은 Spring Boot 및 Micrometer, Prometheus 모니터링 생태계에 숙련된 수석 Java 개발자입니다.
+우리 프로젝트에 **Micrometer 기반의 Prometheus 커스텀 메트릭 수집 시스템**과 **도메인별 커스텀 예외 기반의 `@RestControllerAdvice` 핸들러**를 **TDD(Test-Driven Development)** 방식으로 구현하는 것이 당신의 임무입니다.
+
+---
+
+# 요구사항 명세 (Requirements)
+
+### 1. Prometheus 메트릭 정의 (`MetricService`)
+Micrometer의 `MeterRegistry`를 주입받아 다음 메트릭들을 관리하는 `MetricService`를 구현하세요.
+
+* **MinIO Presigned URL 요청 카운터**
+  * Metric Name: `minio_presigned_url_requests_total`
+  * Type: `Counter`
+  * Tags: `action` (e.g., "generate"), `status` ("success" | "fail")
+* **Spark CR 제출 카운터**
+  * Metric Name: `spark_job_submissions_total`
+  * Type: `Counter`
+  * Tags: `analysis_type` (e.g., "TYPE_A"), `status` ("success" | "fail")
+* **실행 중인 Spark CR 개수 게이지**
+  * Metric Name: `spark_job_active_total`
+  * Type: `Gauge`
+  * Tags: `analysis_type`
+  * Behavior: `incrementActiveJob(analysisType)`, `decrementActiveJob(analysisType)` 구현
+* **Spark 잡 실행 시간 타이머**
+  * Metric Name: `spark_job_execution_duration_seconds`
+  * Type: `Timer`
+  * Tags: `analysis_type`, `status` ("SUCCESS" | "FAILED")
+
+---
+
+### 2. 도메인별 커스텀 예외 (Custom Exceptions)
+`IllegalArgumentException` 등 자바 표준 예외가 여러 컨트롤러에서 혼재되어 발생할 때 메트릭이 오적재되는 것을 방지하기 위해 도메인별 예외를 정의하세요.
+
+* `MinioInvalidParamException`: MinIO 파라미터 검증 실패 시 (HTTP 400)
+* `MinioOperationException`: MinIO 연동 중 런타임 에러 발생 시 (HTTP 500)
+* `SparkSubmitInvalidParamException`: Spark Submit 파라미터 검증 실패 시 (HTTP 400)
+* `SparkSubmitOperationException`: Spark CR 제출 중 런타임 에러 발생 시 (HTTP 500)
+
+---
+
+### 3. 예외 핸들러 및 메트릭 자동 수집 (`GlobalExceptionHandler`)
+`@RestControllerAdvice`를 통해 예외 발생 시 적절한 HTTP 응답 생성 및 실패 메트릭 적재를 일괄 처리하세요.
+
+* `MinioInvalidParamException` / `MinioOperationException` 캐치 시:
+  * `minio_presigned_url_requests_total` 카운트 증가 (`status="fail"`)
+  * 적절한 HTTP Status(400 또는 500)와 에러 메시지 반환
+* `SparkSubmitInvalidParamException` / `SparkSubmitOperationException` 캐치 시:
+  * `spark_job_submissions_total` 카운트 증가 (`status="fail"`, `analysis_type`은 예외에서 추출하거나 "unknown")
+  * 적절한 HTTP Status(400 또는 500)와 에러 메시지 반환
+
+---
+
+### 4. 서비스 레이어 적용 예시 (`MinioService`, `SparkJobService`)
+* 비즈니스 로직 및 `AnalyzeType.fromValue()` 호출 중 `IllegalArgumentException` 발생 시, 이를 캐치하여 각 도메인의 `*InvalidParamException`으로 전환(wrap)하여 던져야 합니다.
+* 정상 처리 완료 시 성공 메트릭(`status="success"`)을 호출합니다.
+* 컨트롤러 및 서비스 레이어에 지저분한 `try-catch` 메트릭 수집 코드를 두지 않고 예외 핸들러에 위임합니다.
+
+---
+
+# TDD 개발 워크플로우 지침 (Strict Rule)
+
+모든 클래스는 **Red (실패하는 테스트 작성) -> Green (테스트를 통과하는 최소한의 구현) -> Refactor (리팩토링)** 순서를 반드시 지켜 작성하세요.
+
+1. **Phase 1: `MetricServiceTest` 작성 및 구현**
+   * `SimpleMeterRegistry`를 사용하여 각 메트릭(Counter, Gauge, Timer)이 정상적으로 등록되고 값이 증가/감소하는지 검증하는 단위 테스트를 먼저 작성하세요.
+   * 테스트를 통과시키는 `MetricService`를 구현하세요.
+
+2. **Phase 2: Custom Exception 및 `GlobalExceptionHandlerTest` 작성 및 구현**
+   * `@WebMvcTest` 또는 MockMvc/`SimpleMeterRegistry`를 활용하여 예외 발생 시 `GlobalExceptionHandler`가 올바른 HTTP 응답 상태코드를 반환하고 실패 메트릭을 올리는지 검증하는 테스트를 먼저 작성하세요.
+   * 테스트를 통과시키는 Custom Exception 클래스들과 `GlobalExceptionHandler`를 구현하세요.
+
+3. **Phase 3: Service Layer Unit Test 작성 및 구현**
+   * `AnalyzeType.fromValue()` 실패 시 커스텀 예외로 잘 전환되는지, 성공 시 성공 메트릭이 호출되는지 Mockito를 활용한 단위 테스트를 작성하세요.
+   * 테스트를 통과시키는 `MinioService`, `SparkJobService` 내 메트릭 연동 코드를 구현하세요.
+
+---
+
+# Output Format
+각 단계별로 작성한 **[테스트 코드]**를 먼저 제시하고, 해당 테스트를 통과하기 위한 **[실제 구현 코드]**를 순서대로 출력해 주세요. 모든 코드는 즉시 실행 가능하도록 패키지 임포트문을 포함해 주세요.
