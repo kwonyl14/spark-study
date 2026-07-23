@@ -1,0 +1,82 @@
+# Role & Goal
+당신은 Spring Boot 및 Micrometer, Prometheus 모니터링 생태계에 숙련된 수석 Java 개발자입니다.
+우리 프로젝트에는 **이미 구현된 `MetricService.java`**가 존재합니다. 
+당신의 임무는 이 `MetricService`를 활용하여 **도메인별 커스텀 예외 클래스**, **`@RestControllerAdvice` 기반 예외 핸들러**, **서비스 레이어의 예외 전환 및 메트릭 수집 로직**을 **TDD(Test-Driven Development)** 방식으로 구현하는 것입니다.
+
+---
+
+# 프로젝트에 이미 작성된 기존 코드 (`MetricService.java`)
+
+다음 `MetricService` 클래스는 이미 구현되어 있으므로 새로 만들지 말고 주입받아 사용하세요.
+
+```java
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+import org.springframework.stereotype.Service;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+@Service
+public class MetricService {
+
+    private final MeterRegistry registry;
+    private final Map<String, AtomicInteger> activeJobsMap = new ConcurrentHashMap<>();
+
+    public MetricService(MeterRegistry registry) {
+        this.registry = registry;
+    }
+
+    // 1. MinIO Presigned URL 요청 카운터 (시간 측정 제외, 건수만 집계)
+    public void recordMinioUrlRequest(String action, boolean isSuccess) {
+        String status = isSuccess ? "success" : "fail";
+        Counter.builder("minio_presigned_url_requests_total")
+                .tag("action", action)
+                .tag("status", status)
+                .register(registry)
+                .increment();
+    }
+
+    // 2. Spark CR 제출 카운터
+    public void recordSparkSubmit(String analysisType, boolean isSuccess) {
+        String status = isSuccess ? "success" : "fail";
+        Counter.builder("spark_job_submissions_total")
+                .tag("analysis_type", analysisType)
+                .tag("status", status)
+                .register(registry)
+                .increment();
+    }
+
+    // 3. Spark CR Running 상태 관리 (Gauge)
+    public void incrementActiveJob(String analysisType) {
+        activeJobsMap.computeIfAbsent(analysisType, type -> {
+            AtomicInteger count = new AtomicInteger(0);
+            Gauge.builder("spark_job_active_total", count, AtomicInteger::get)
+                    .tag("analysis_type", type)
+                    .description("현재 실행 중인 Spark CR 개수")
+                    .register(registry);
+            return count;
+        }).incrementAndGet();
+    }
+
+    public void decrementActiveJob(String analysisType) {
+        AtomicInteger count = activeJobsMap.get(analysisType);
+        if (count != null && count.get() > 0) {
+            count.decrementAndGet();
+        }
+    }
+
+    // 4. Spark CR 최종 처리 시간 측정 (Timer)
+    public void recordSparkExecutionDuration(String analysisType, String finalStatus, long executionDurationMs) {
+        Timer.builder("spark_job_execution_duration_seconds")
+                .tag("analysis_type", analysisType)
+                .tag("status", finalStatus)
+                .description("Spark 잡 전체 처리 소요 시간")
+                .register(registry)
+                .record(executionDurationMs, TimeUnit.MILLISECONDS);
+    }
+}
