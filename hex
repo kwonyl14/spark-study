@@ -1,0 +1,12 @@
+# 1. dt2 파일의 4바이트씩 읽어 정수로 변환 후 txt 파일로 추출
+$bytes = [System.IO.File]::ReadAllBytes(".\data.dt2")
+$results = for ($i = 0; $i -lt $bytes.Length; $i += 4) {
+    if ($i + 4 -le $bytes.Length) {
+        $uintVal = [System.BitConverter]::ToUInt32($bytes, $i)
+        "Offset [0x{0:X4}]: {1}" -f $i, $uintVal
+    }
+}
+$results | Out-File -FilePath ".\output.txt" -Encoding utf8
+
+# 2. 변환된 텍스트 파일을 메모장으로 열기
+notepad .\output.txt
