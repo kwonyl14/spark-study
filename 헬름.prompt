@@ -1,0 +1,363 @@
+현재 저장소에서 "helm create ias-api-server"까지 수행된 상태라고 가정하고, 이후 IAS API Server용 Helm Chart 구성을 완성해줘.
+
+목표는 내가 마지막에 직접 아래 명령을 실행했을 때 실제 Kubernetes 환경에 정상 배포될 수 있는 수준까지 Chart를 완성하고 검증하는 것이다.
+
+helm upgrade --install ias-api-server ./ias-api-server \
+  -f <환경별 values 파일> \
+  -n <namespace>
+
+단, 실제 "helm upgrade --install" 배포는 수행하지 말고, 설치 직전까지 검증만 수행해라.
+
+1. 작업 전 기존 구성 분석
+
+먼저 저장소 전체를 확인해서 기존 IAS API Server의 Kubernetes manifest, 설정 파일, 배포 스크립트 등이 존재하는지 찾아라.
+
+특히 다음 리소스를 확인해라.
+
+- Deployment
+- Service
+- ServiceAccount
+- ServiceMonitor
+- Ingress
+- ConfigMap / Secret 참조가 있다면 해당 구조
+- imagePullSecrets
+- volume / volumeMount
+- env / envFrom
+- livenessProbe / readinessProbe / startupProbe
+- resource requests / limits
+- nodeSelector / affinity / tolerations
+- Prometheus 관련 annotation
+- RBAC 관련 리소스가 있다면 Role / RoleBinding / ClusterRole / ClusterRoleBinding
+
+기존 manifest가 존재한다면 그것을 기준으로 Helm Chart를 작성하고 기존 동작을 최대한 그대로 보존해라.
+
+기존 설정을 임의로 추측해서 새 값을 만들지 마라.
+
+현재 Kubernetes 리소스를 조회할 수 있는 환경이라면 필요한 경우 "kubectl get ... -o yaml"을 참고할 수 있지만, "status", "uid", "resourceVersion", "managedFields", "creationTimestamp" 등 런타임 메타데이터는 Chart에 포함하지 마라.
+
+2. Helm Chart 기본 원칙
+
+"helm create ias-api-server"로 생성된 기본 구조를 기반으로 작업한다.
+
+기본 "_helpers.tpl"은 삭제하거나 단순화하지 말고 Helm 기본 naming/label helper를 최대한 활용해라.
+
+특히 다음 helper 패턴을 유지해서 리소스 이름과 labels를 일관되게 관리해라.
+
+- "ias-api-server.name"
+- "ias-api-server.fullname"
+- "ias-api-server.labels"
+- "ias-api-server.selectorLabels"
+- "ias-api-server.serviceAccountName"
+
+Deployment, Service, ServiceAccount, ServiceMonitor, Ingress 등의 리소스 이름과 label/selector가 서로 불일치하지 않도록 "_helpers.tpl"을 공통으로 사용해라.
+
+"nameOverride", "fullnameOverride" 같은 Helm 기본 override 기능도 가능하면 유지한다.
+
+3. values로 과도하게 변수화하지 말 것
+
+모든 YAML 값을 ".Values"로 빼지 마라.
+
+원칙은 다음과 같다.
+
+values로 분리할 것
+
+배포/환경마다 변경될 가능성이 있거나 운영자가 조절해야 하는 값:
+
+- replicaCount
+- image.repository
+- image.tag
+- image.pullPolicy
+- imagePullSecrets
+- resources.requests / limits
+- Ingress host
+- Ingress enable 여부
+- Ingress className 등 환경 의존 설정
+- ServiceMonitor enable 여부
+- ServiceMonitor interval 등 운영 설정
+- 환경별 env 값
+- nodeSelector / affinity / tolerations 등 환경 의존 설정
+- 필요하다면 Service type
+- 기타 dev/prod마다 실제로 달라지는 값
+
+template에 고정해도 되는 것
+
+IAS API Server 애플리케이션 자체의 고정 구조:
+
+- apiVersion
+- kind
+- container name
+- 고정 label 구조
+- 고정 port name
+- 애플리케이션이 항상 사용하는 containerPort
+- Deployment 전략이 실제로 고정되어 있다면 해당 구조
+- 기타 IAS API 자체 규격으로 고정된 값
+
+단순히 "언젠가 바뀔 수도 있다"는 이유로 모든 값을 values로 분리하지 마라.
+
+"values.yaml"이 Kubernetes YAML을 다시 한 번 표현하는 파일이 되지 않도록 해라.
+
+4. 필요한 template 구성
+
+기존 IAS 구성을 분석한 뒤 최소한 다음 리소스를 완성해라.
+
+ias-api-server/
+├── Chart.yaml
+├── values.yaml
+├── .helmignore
+└── templates/
+    ├── _helpers.tpl
+    ├── deployment.yaml
+    ├── service.yaml
+    ├── serviceaccount.yaml
+    ├── servicemonitor.yaml
+    └── ingress.yaml
+
+기존 IAS API에 추가적인 필수 리소스가 확인된다면 필요한 template을 추가해도 된다.
+
+반대로 "helm create"가 기본으로 생성한 것 중 현재 IAS에서 사용하지 않는 다음 파일들은 필요성을 판단해서 제거해라.
+
+- "templates/hpa.yaml"
+- "templates/tests/*"
+- "templates/NOTES.txt"
+
+HPA가 실제 IAS에서 사용되고 있다면 제거하면 안 된다.
+
+5. Service / Deployment 연결 검증
+
+특히 다음 연결 관계를 반드시 확인해라.
+
+Deployment:
+
+metadata.labels
+spec.selector.matchLabels
+spec.template.metadata.labels
+
+Service:
+
+spec.selector
+
+위 selector/label이 정확히 일치해야 한다.
+
+가능하면 "_helpers.tpl"의 "selectorLabels"를 공통으로 사용해라.
+
+Service의 "targetPort"와 Deployment container port도 일치하는지 확인해라.
+
+6. ServiceAccount / RBAC 검증
+
+IAS API Server가 Kubernetes API를 통해 SparkApplication 또는 Pod 등 다른 Kubernetes 리소스를 생성하는 구조라면 현재 사용 중인 ServiceAccount 및 RBAC 구성을 반드시 찾아서 확인해라.
+
+Deployment의:
+
+serviceAccountName:
+
+이 Helm에서 생성하거나 참조하는 ServiceAccount와 정확히 일치해야 한다.
+
+기존 Role / RoleBinding / ClusterRole / ClusterRoleBinding이 별도 manifest로 관리되고 있고 IAS API 실행에 필수라면 누락시키지 마라.
+
+다만 기존 권한보다 더 넓은 권한을 임의로 추가하지 마라.
+
+7. ServiceMonitor 검증
+
+ServiceMonitor는 Prometheus Operator CRD를 사용하는 리소스이므로 기존 IAS 환경의 Service와 ServiceMonitor 연결 관계를 확인해라.
+
+특히 다음을 검증해라.
+
+- ServiceMonitor selector가 IAS API Service label과 일치하는지
+- "endpoints.port"가 Service의 "ports[].name"과 일치하는지
+- metrics path
+- interval
+- namespace 관련 설정
+- Prometheus가 ServiceMonitor를 발견하기 위해 필요한 label이 기존에 있다면 유지
+
+ServiceMonitor가 선택적으로 사용될 가능성이 있다면:
+
+{{- if .Values.serviceMonitor.enabled }}
+...
+{{- end }}
+
+형태로 제어할 수 있게 구성해라.
+
+단 CRD가 없는 환경에서 렌더링 자체가 깨지도록 만들지는 마라.
+
+8. Ingress 검증
+
+Ingress는 현재 IAS에서 사용 중인 Ingress 구조를 기준으로 작성해라.
+
+다음을 확인해라.
+
+- ingressClassName
+- host
+- path
+- pathType
+- backend Service 이름
+- backend port
+- annotations
+- TLS 사용 여부
+
+host처럼 환경별로 달라지는 값은 values로 분리한다.
+
+Ingress 사용 여부는 가능하면:
+
+ingress:
+  enabled: true
+
+형태로 제어할 수 있게 한다.
+
+9. Secret 처리
+
+비밀번호, 토큰, 인증키 등 실제 Secret 값을 "values.yaml"에 평문으로 새로 넣지 마라.
+
+기존 Kubernetes Secret을 참조하는 구조라면 해당 Secret 이름이나 참조 구조만 유지한다.
+
+현재 저장소에 이미 민감정보가 들어 있다면 이를 출력하거나 새 파일에 복제하지 말고 발견 사실과 개선 필요성만 최종 보고서에 적어라.
+
+10. values 파일 구성
+
+먼저 공통 기본값을:
+
+ias-api-server/values.yaml
+
+에 구성한다.
+
+저장소에 dev/prod 환경 구분이 실제 존재한다면 다음과 같이 환경별 values 파일도 구성해라.
+
+예:
+
+environments/
+├── dev/
+│   └── ias-api-server-values.yaml
+└── prod/
+    └── ias-api-server-values.yaml
+
+향후 Argo CD에서 Chart와 환경별 values 파일을 쉽게 지정할 수 있는 구조를 고려한다.
+
+단 현재 저장소에서 실제 dev/prod 값을 확인할 수 없다면 임의의 host, registry, namespace, resource 값을 만들어내지 마라.
+
+확인할 수 없는 값은 공통 values에 기존 값을 유지하거나 명확한 placeholder로 표시하고 최종 보고에서 알려라.
+
+namespace는 template 내부에 "ias-dev", "ias-prod" 등으로 하드코딩하지 마라.
+
+가능하면 namespace field 자체를 생략하고 Helm release namespace를 사용한다.
+
+11. Chart.yaml 정리
+
+Chart.yaml도 IAS API Server 기준으로 정리한다.
+
+예:
+
+apiVersion: v2
+name: ias-api-server
+description: Helm chart for IAS API Server
+type: application
+version: 0.1.0
+
+"version"과 "appVersion"의 의미를 구분하고, 기존 애플리케이션 버전을 확실히 알 수 없다면 임의로 특정 버전을 만들어내지 마라.
+
+12. 검증
+
+구성 완료 후 반드시 직접 검증해라.
+
+최소 다음 명령을 수행한다.
+
+Helm lint
+
+helm lint ./ias-api-server
+
+오류가 있으면 수정하고 다시 실행해서 성공시켜라.
+
+Helm template
+
+기본 values:
+
+helm template ias-api-server ./ias-api-server
+
+환경별 values가 존재한다면 각각:
+
+helm template ias-api-server ./ias-api-server \
+  -f <환경 values>
+
+를 수행한다.
+
+렌더링된 manifest를 실제로 검토해서 다음을 확인한다.
+
+- YAML 문법
+- resource name
+- labels / selectors
+- Service ↔ Deployment 연결
+- ServiceMonitor ↔ Service 연결
+- Ingress ↔ Service 연결
+- ServiceAccount ↔ Deployment 연결
+- image 값
+- env/envFrom
+- volume/volumeMount
+- probe
+- resources
+- namespace 하드코딩 여부
+
+Dry-run
+
+클러스터 접근이 가능하다면 실제 배포 없이 다음 수준까지 검증한다.
+
+helm upgrade --install ias-api-server ./ias-api-server \
+  -f <환경 values> \
+  -n <namespace> \
+  --dry-run
+
+사용 가능한 Helm 버전에서 server-side dry-run이 가능하고 안전하게 수행할 수 있다면 Kubernetes API 검증도 활용한다.
+
+필요하다면 렌더링된 manifest에 대해:
+
+kubectl apply --dry-run=client
+
+또는 환경이 허용한다면 server-side dry-run도 사용한다.
+
+단 실제 Kubernetes 리소스를 생성하거나 기존 리소스를 변경하지 마라.
+
+13. 기존 리소스와의 충돌 검토
+
+중요:
+
+현재 IAS API Server가 이미 "kubectl apply" 등으로 배포되어 있는 상태에서 동일한 이름의 리소스를 Helm으로 처음 관리하려고 하면 Helm ownership metadata 문제로 설치가 실패할 수 있다.
+
+현재 클러스터를 조회할 수 있다면 기존 리소스가 존재하는지 확인하고:
+
+- 이미 존재하는 Deployment
+- Service
+- ServiceAccount
+- ServiceMonitor
+- Ingress
+- RBAC
+
+등이 첫 "helm upgrade --install" 시 Helm에 의해 정상적으로 생성 가능한지, 아니면 기존 리소스 ownership 때문에 충돌할 가능성이 있는지 분석해라.
+
+기존 운영 리소스를 삭제하거나 변경하지는 마라.
+
+충돌 가능성이 있으면 정확히 어떤 리소스가 왜 충돌하는지 최종 보고에 적어라.
+
+14. 최종 결과 보고
+
+모든 작업과 검증이 끝난 후 다음을 간결하게 정리해서 보고해라.
+
+1. 생성/수정/삭제한 파일
+2. values로 분리한 항목과 고정값으로 유지한 항목
+3. 기존 Kubernetes manifest 대비 변경사항
+4. "helm lint" 결과
+5. "helm template" 결과
+6. dry-run 결과
+7. 실제 배포 전에 내가 반드시 수정해야 할 placeholder나 환경값
+8. 기존 Kubernetes 리소스와 Helm ownership 충돌 가능성
+9. 실제 배포에 사용할 정확한 명령어
+
+최종적으로 내가 실행해야 할 명령을 정확하게 제시해라.
+
+예:
+
+helm upgrade --install ias-api-server ./ias-api-server \
+  -f environments/dev/ias-api-server-values.yaml \
+  -n <실제 namespace>
+
+가장 중요한 원칙은 기존 IAS API Server의 현재 동작을 보존하면서 Helm으로 관리 가능하게 전환하는 것이다.
+
+불필요한 리팩터링이나 Kubernetes 구조 변경은 하지 마라.
+
+작업 중 문제가 발견되면 단순히 보고하고 중단하지 말고, 저장소 안에서 확실하게 판단할 수 있는 문제는 직접 수정한 뒤 다시 검증해라.
