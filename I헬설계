@@ -1,0 +1,168 @@
+# IAS API Server Helm Chart 설계
+
+## 1. 목적
+
+IAS API Server의 Kubernetes 리소스를 Helm Chart로 구성하여 배포 설정을 표준화한다.
+
+현재 개별 Kubernetes Manifest 및 애플리케이션 내부 설정으로 관리되는 항목을 정리하고, 환경에 따라 변경되는 설정은 외부에서 주입할 수 있도록 구성한다.
+
+1차로 Helm CLI를 이용한 수동 배포가 가능한 상태까지 구성하며, 이후 Argo CD를 연계하여 GitOps 기반 배포 방식으로 전환한다.
+
+---
+
+## 2. Helm Chart 구성
+
+IAS API Server 배포에 필요한 Kubernetes 리소스를 하나의 Helm Chart에서 관리한다.
+
+```text
+ias-api-server/
+├── Chart.yaml
+├── values.yaml
+└── templates/
+    ├── _helpers.tpl
+    ├── deployment.yaml
+    ├── service.yaml
+    ├── serviceaccount.yaml
+    ├── servicemonitor.yaml
+    ├── ingress.yaml
+    └── configmap.yaml
+```
+
+### 관리 대상
+
+| 리소스 | 용도 |
+| --- | --- |
+| Deployment | IAS API Server Pod 배포 및 실행 설정 |
+| Service | API Server 내부 네트워크 연결 |
+| ServiceAccount | API Server의 Kubernetes 리소스 접근 권한 연계 |
+| ServiceMonitor | Prometheus 메트릭 수집 |
+| Ingress | 외부/UI에서 API Server 접근 |
+| ConfigMap | 환경별 일반 설정 주입 |
+
+기존에 사용 중인 Kubernetes 리소스 구성을 기준으로 작성하며, Helm 적용 과정에서 불필요한 리소스 구조 변경은 하지 않는다.
+
+---
+
+## 3. Values 관리 기준
+
+모든 설정을 Values로 분리하지 않고, **배포 환경에 따라 변경되는 값만 외부 설정으로 관리**한다.
+
+### Values 관리 대상
+
+- Docker Image Repository / Tag
+- Replica 수
+- CPU / Memory Request, Limit
+- Ingress Host 및 환경별 Ingress 설정
+- ServiceMonitor 활성화 및 수집 주기
+- 환경별 애플리케이션 설정
+- NodeSelector, Affinity, Toleration 등 환경 의존 설정
+
+Deployment, Service 등의 고정된 리소스 구조와 IAS API Server 자체의 고정 설정은 Template에 유지한다.
+
+리소스명과 공통 Label은 `_helpers.tpl`을 이용하여 일관되게 관리한다.
+
+---
+
+## 4. Config / Secret 관리
+
+애플리케이션 실행에 필요한 설정을 일반 설정과 보안 설정으로 분리한다.
+
+### 일반 설정
+
+DB Host, Spark Namespace 등 외부 노출에 문제가 없는 환경별 설정은 ConfigMap을 통해 주입한다.
+
+```text
+values.yaml
+    ↓
+ConfigMap
+    ↓
+IAS API Server
+```
+
+### 보안 설정
+
+Password, Access Key, Token 등 보안 정보는 Helm Chart 및 Git Repository에 실제 값을 저장하지 않는다.
+
+Helm Chart에서는 Kubernetes Secret의 이름과 Key만 참조한다.
+
+```text
+Kubernetes Secret
+        ↓
+Deployment
+        ↓
+IAS API Server
+```
+
+초기 Helm 적용 단계에서는 Secret을 Kubernetes에 별도로 생성하여 관리한다.
+
+향후 Argo CD 적용 시 External Secrets 등의 Secret 관리 방식 도입을 검토한다.
+
+---
+
+## 5. 환경별 설정
+
+Chart 자체와 환경별 설정을 분리할 수 있도록 구성한다.
+
+```text
+charts/
+└── ias-api-server/
+    ├── Chart.yaml
+    ├── values.yaml
+    └── templates/
+
+environments/
+├── dev/
+│   └── ias-api-server-values.yaml
+└── prod/
+    └── ias-api-server-values.yaml
+```
+
+Chart에는 공통 배포 구조를 정의하고, 환경별 차이는 Values 파일에서 관리한다.
+
+Namespace는 Template에 하드코딩하지 않고 배포 대상 Namespace를 사용한다.
+
+---
+
+## 6. 배포 및 검증
+
+초기에는 Helm CLI를 이용하여 수동 배포한다.
+
+배포 전 다음 순서로 Chart를 검증한다.
+
+```bash
+helm lint ./charts/ias-api-server
+
+helm template ias-api-server ./charts/ias-api-server \
+  -f environments/dev/ias-api-server-values.yaml
+
+helm upgrade --install ias-api-server ./charts/ias-api-server \
+  -f environments/dev/ias-api-server-values.yaml \
+  -n <namespace> \
+  --dry-run
+```
+
+검증 완료 후 동일한 Chart와 Values를 이용하여 실제 배포한다.
+
+배포 후 Deployment, Service, Ingress, ServiceMonitor 및 API Server 동작 여부를 확인한다.
+
+---
+
+## 7. Argo CD 연계
+
+Helm Chart 검증 및 수동 배포 구성이 완료되면 Argo CD에서 동일한 Git Repository를 배포 기준으로 사용한다.
+
+```text
+Git Repository
+  ├── Helm Chart
+  └── 환경별 Values
+          │
+          ↓
+       Argo CD
+          │
+          ↓
+   Kubernetes Cluster
+```
+
+Argo CD 적용 이후에는 수동 `helm upgrade` 방식 대신 Git의 Chart 및 Values 변경사항을 기준으로 Kubernetes 배포 상태를 관리한다.
+
+Jenkins는 애플리케이션 Build 및 Image Push를 담당하고, Kubernetes 배포는 Argo CD가 담당하도록 CI/CD 역할을 분리한다.
