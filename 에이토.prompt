@@ -1,0 +1,1755 @@
+Multi-Agent Debate Observatory
+
+너는 이 프로젝트의 Principal Architect이자 Lead Engineer다.
+
+내가 만들고 싶은 것은 여러 AI Agent가 하나의 주제에 대해 독립적으로 의견을 내고, 서로의 주장을 익명으로 읽고, 반박하고, 방어하고, 개선안을 제시한 뒤 최종 Judge가 결과를 통합하는 로컬 실행형 Multi-Agent Debate System이다.
+
+단순히 백엔드에서 에이전트들이 대화하는 시스템이 아니라, 사용자가 웹 브라우저에서 실시간으로 토론 과정을 관찰할 수 있는 시각적 인터페이스를 제공해야 한다.
+
+픽셀 아트 스타일의 회의실에서 여러 캐릭터가 테이블에 앉아 토론하는 느낌을 기본 UX로 하되, 실제 시스템 상태와 논쟁 구조를 정확하게 이해할 수 있는 개발/분석 도구여야 한다.
+
+---
+
+0. 절대적인 개발 원칙
+
+이 프로젝트에서는 다음 원칙을 반드시 지킨다.
+
+0.1 Phase 단위 개발
+
+전체 시스템을 한 번에 구현하지 않는다.
+
+프로젝트는 아래 Phase들로 나눈다.
+
+내가 명시적으로
+
+"Phase N 시작"
+
+이라고 요청하기 전까지 해당 Phase를 구현하지 않는다.
+
+각 Phase가 끝나면 반드시:
+
+1. 구현 내용
+2. 변경 파일
+3. 실행 방법
+4. 테스트 결과
+5. 남아있는 문제
+6. 다음 Phase에 영향을 줄 설계 결정
+
+을 보고하고 멈춘다.
+
+내 승인 없이 다음 Phase로 넘어가지 않는다.
+
+---
+
+1. 프로젝트 목표
+
+사용자가 웹페이지에서 질문을 입력하면 여러 AI Agent가 토론한다.
+
+예:
+
+User
+ ↓
+Debate Engine
+ ↓
+Independent Opinions
+ ↓
+Critique
+ ↓
+Defense
+ ↓
+Alternative Proposal
+ ↓
+Final Position
+ ↓
+Judge
+ ↓
+Final Answer
+
+사용자는 이 전체 과정을 웹 UI에서 실시간으로 볼 수 있어야 한다.
+
+---
+
+2. 실행 환경
+
+이 프로젝트는 특정 PC에 종속되어서는 안 된다.
+
+다음 환경에서 실행 가능해야 한다.
+
+Linux Desktop
+Linux Server
+WSL
+macOS
+Android 위 Linux 환경
+
+예를 들어 Android 휴대폰 안에서 Linux 환경을 실행한 후:
+
+./start.sh
+
+또는
+
+docker compose up
+
+정도만 실행하면,
+
+휴대폰 브라우저에서:
+
+http://localhost:<port>
+
+또는 LAN IP로 접근하여 사용할 수 있어야 한다.
+
+Cloud 배포는 현재 목표가 아니다.
+
+Local-first application으로 설계한다.
+
+---
+
+3. 인증 / 모델 사용 비용에 대한 핵심 제약
+
+유료 API 사용을 기본 전제로 설계하면 안 된다.
+
+내가 이미 구독하고 있는 AI 서비스에서 사용할 수 있는 모델은 가능하면 로컬 CLI 또는 해당 서비스의 로그인된 사용자 세션을 활용하는 방식으로 연결한다.
+
+즉 구조적으로 다음 두 종류 Adapter를 지원해야 한다.
+
+Agent Adapter
+ ├─ Local CLI Adapter
+ │    ├─ Codex 계열 CLI
+ │    ├─ Claude Code 계열 CLI
+ │    └─ 향후 추가 CLI
+ │
+ └─ API Adapter
+      └─ OpenRouter
+
+OpenRouter의 경우 내가 직접 API Key를 입력한다.
+
+OpenRouter에서는 기본적으로:
+
+free model
+무료 사용 가능한 모델
+
+위주로 사용한다.
+
+유료 API Key 사용을 필수 전제로 만들지 않는다.
+
+API Key / 인증 정보는 소스 코드에 넣지 않는다.
+
+다음처럼 외부 설정으로 관리한다.
+
+.env
+config
+environment variables
+
+그리고 절대로 Git에 commit되지 않도록 한다.
+
+---
+
+4. Agent Adapter Architecture
+
+모델 구현과 Debate Engine을 강하게 분리한다.
+
+예:
+
+AgentAdapter
+    |
+    +-- LocalCliAgent
+    |
+    +-- OpenRouterAgent
+    |
+    +-- MockAgent
+    |
+    +-- FutureAgent
+
+공통 인터페이스의 개념은 대략 다음과 같다.
+
+invoke(context, instruction) -> AgentResponse
+
+Debate Engine은 실제 모델이 무엇인지 몰라야 한다.
+
+예를 들어:
+
+Agent A = Astra
+Agent B = Sol
+Agent C = Luna
+
+였다가
+
+Agent A = OpenRouter Free Model
+Agent B = Luna
+Agent C = Sol
+
+로 변경되어도 Debate Engine과 Frontend를 수정하지 않아야 한다.
+
+---
+
+5. Agent 익명성
+
+에이전트들은 서로의 실제 identity를 알 수 없게 한다.
+
+예를 들어 실제 내부 mapping:
+
+Agent A → Astra
+Agent B → Sol
+Agent C → Luna
+
+가 존재하더라도 Agent A에게 전달되는 정보는:
+
+Agent B says:
+...
+
+Agent C says:
+...
+
+이어야 한다.
+
+절대로:
+
+Sol says:
+Luna says:
+Astra says:
+
+처럼 실제 모델명을 전달하지 않는다.
+
+목적은 모델 브랜드나 성능에 따른 권위 편향을 줄이는 것이다.
+
+Backend Orchestrator와 UI 설정 화면에서는 실제 mapping을 알 수 있어도 된다.
+
+토론 참가 Agent에게만 익명이어야 한다.
+
+---
+
+6. 역할 구조
+
+기본적으로 다음 역할을 사용한다.
+
+Orchestrator
+Proposal Agent
+Critic Agent
+Additional Challenger
+Judge
+
+초기 권장 mapping:
+
+Astra
+→ 최초 강한 제안 / 설계
+
+Sol
+→ 강한 비판 / 반증
+
+Luna
+→ 저비용 추가 탐색 / 반론
+
+Sol
+→ 기본 Judge
+
+Astra
+→ Judge confidence가 낮을 경우 escalation
+
+단 실제 모델 mapping은 설정 가능해야 한다.
+
+---
+
+7. Orchestrator 원칙
+
+Orchestrator에게 지나친 지능을 요구하지 않는다.
+
+가능한 많은 역할을 deterministic code로 구현한다.
+
+예:
+
+Round 진행
+Agent 호출 순서
+timeout
+retry
+max round
+state transition
+message routing
+conversation storage
+event emission
+
+이것들은 LLM이 아니라 프로그램 코드가 처리한다.
+
+Luna 등 저비용 모델을 Moderator로 사용하는 경우도 다음 업무 정도로 제한한다.
+
+현재 쟁점 요약
+미해결 논점 추출
+다음 검증 질문 제안
+표면적 합의 여부 판단
+
+하지만 최종적인 품질 판정은 Judge가 수행한다.
+
+---
+
+8. Debate Protocol
+
+기본 Debate는 다음 단계로 진행한다.
+
+Round 0 — Problem Definition
+
+사용자의 질문을 분석한다.
+
+산출물:
+
+question
+constraints
+success criteria
+key uncertainties
+
+---
+
+Round 1 — Independent Proposals
+
+각 Agent는 다른 Agent의 답변을 보지 않고 독립적으로 의견을 낸다.
+
+이는 매우 중요하다.
+
+초기 의견이 서로 오염되지 않아야 한다.
+
+---
+
+Round 2 — Cross Critique
+
+모든 Agent가 다른 Agent들의 공개 의견을 읽는다.
+
+각 Agent는:
+
+가장 약한 주장
+숨겨진 전제
+논리적 오류
+실패 가능성
+놓친 대안
+
+을 공격한다.
+
+---
+
+Round 3 — Defense
+
+각 Agent는 자신에게 들어온 비판을 읽고 방어하거나 입장을 수정한다.
+
+수정하는 것은 실패가 아니다.
+
+오히려 좋은 토론에서는 적극적인 입장 수정이 가능해야 한다.
+
+---
+
+Round 4 — Alternative / Improvement
+
+기존 안을 단순히 공격하는 데서 끝내지 않는다.
+
+각 Agent에게:
+
+더 나은 대안
+절충안
+새로운 구조
+기존 아이디어 개선안
+
+을 제안하도록 한다.
+
+---
+
+Round 5 — Final Position
+
+각 Agent는 최종 입장을 제출한다.
+
+형식 예:
+
+recommended_position
+
+key_reasons
+
+remaining_risks
+
+confidence
+
+disagreements
+
+---
+
+Judge
+
+Judge는 전체 토론 기록을 읽고 결과를 통합한다.
+
+단순 다수결을 하면 안 된다.
+
+Judge는 다음을 평가한다.
+
+논거의 질
+증거
+반론 대응
+실패 조건
+trade-off
+미해결 쟁점
+
+최종적으로:
+
+final recommendation
+
+why
+
+rejected alternatives
+
+important disagreements
+
+remaining uncertainty
+
+confidence
+
+를 반환한다.
+
+---
+
+9. Early Termination
+
+무조건 모든 Round를 실행할 필요는 없다.
+
+충분한 합의가 이루어진 경우 조기 종료할 수 있다.
+
+그러나 단순히:
+
+모두 동의함
+
+만으로 종료해서는 안 된다.
+
+최소한:
+
+핵심 반론 해결 여부
+
+critical unresolved issues
+
+독립적 반증 수행 여부
+
+를 확인해야 한다.
+
+---
+
+10. Shared Debate Room
+
+Agent끼리 직접 연결하지 않는다.
+
+중앙에 Shared Debate State가 존재한다.
+
+Agent
+   ↓
+Debate Bus
+   ↓
+Shared Debate State
+   ↓
+Other Agents
+
+각 Agent가 볼 수 있는 것은:
+
+사용자의 원래 질문
+
+공개된 다른 Agent 발언
+
+현재 Round
+
+현재 논쟁 중인 Issue
+
+미해결 Issue
+
+이다.
+
+---
+
+11. 절대 공유하면 안 되는 것
+
+Agent의 내부 추론을 서로 공유하지 않는다.
+
+다음 정보는 Debate Room에 올라오면 안 된다.
+
+chain-of-thought
+
+hidden reasoning
+
+CLI debug logs
+
+tool execution logs
+
+system prompt
+
+raw shell output
+
+temporary scratchpad
+
+Agent가 명시적으로 제출한 public debate message만 공유한다.
+
+---
+
+12. Structured Debate Message
+
+모든 발언은 구조화된 Event/Message 형태로 저장한다.
+
+예:
+
+{
+  "debate_id": "...",
+  "agent_id": "agent-b",
+  "round": 2,
+  "type": "critique",
+  "target": "agent-a",
+  "issue_id": "issue-3",
+  "content": "...",
+  "timestamp": "..."
+}
+
+가능한 message type:
+
+proposal
+claim
+critique
+question
+defense
+agreement
+disagreement
+alternative
+revision
+vote
+judge_result
+system_event
+
+UI는 이 message type을 이용하여 캐릭터 행동이나 아이콘을 표현한다.
+
+---
+
+13. Issue Tracking
+
+단순 채팅 transcript만 만들어서는 안 된다.
+
+토론에서 발생한 쟁점을 별도의 entity로 관리한다.
+
+예:
+
+Issue #1
+"PostgreSQL 대신 ClickHouse를 사용할 것인가?"
+
+status:
+OPEN
+
+Agent A:
+찬성
+
+Agent B:
+반대
+
+Agent C:
+조건부 찬성
+
+상태:
+
+OPEN
+CONTESTED
+RESOLVED
+UNRESOLVED
+
+최종 Judge 결과에서도 어떤 Issue가 해결됐고 어떤 Issue가 남았는지 보여준다.
+
+---
+
+14. Backend / Frontend 분리
+
+시스템을 명확하게 분리한다.
+
+권장 구조:
+
+Frontend
+   ↓
+API
+   ↓
+Debate Engine
+   ↓
+Agent Adapters
+
+그리고:
+
+Debate Engine
+   ↓
+Event Stream
+   ↓
+Frontend
+
+Frontend는 모델을 직접 호출하지 않는다.
+
+---
+
+15. 실시간 통신
+
+토론 진행 상황은 실시간으로 Frontend에 전달한다.
+
+WebSocket 또는 SSE를 사용할 수 있다.
+
+기술 선택은 복잡도를 고려하여 결정하라.
+
+단:
+
+토론 메시지
+Agent 상태
+Round 변경
+Issue 변경
+Judge 상태
+에러
+
+등이 실시간으로 UI에 나타나야 한다.
+
+---
+
+16. 추천 기술 스택
+
+과도한 인프라를 사용하지 않는다.
+
+Local-first가 핵심이다.
+
+가능한 후보:
+
+Frontend:
+
+React
+또는
+Next.js
+
+Backend:
+
+Python + FastAPI
+
+또는 충분한 근거가 있다면 다른 구조를 제안해도 된다.
+
+Database:
+
+초기:
+
+SQLite
+
+추후:
+
+PostgreSQL
+
+확장이 가능하도록 repository abstraction을 둔다.
+
+실시간:
+
+WebSocket
+or
+SSE
+
+초기에는 Redis, Kafka 등의 인프라를 넣지 않는다.
+
+정말 필요한 시점이 아니면 사용하지 않는다.
+
+---
+
+17. 모바일을 1급 지원 환경으로 취급한다
+
+이것은 Desktop 전용 도구가 아니다.
+
+특히 Android 스마트폰 브라우저에서 정상적으로 사용할 수 있어야 한다.
+
+최소 지원 viewport:
+
+360px width
+
+기준으로 설계한다.
+
+절대로 Desktop UI를 단순 축소하는 방식으로 만들지 않는다.
+
+---
+
+18. Responsive UX
+
+Desktop:
+
+┌────────────┬─────────────────┬─────────────┐
+│ Debate     │ Pixel Meeting   │ Issues      │
+│ Info       │ Room            │ / Status    │
+│            │                 │             │
+└────────────┴─────────────────┴─────────────┘
+              Transcript
+
+Mobile:
+
+┌──────────────────────┐
+│ Debate Header        │
+├──────────────────────┤
+│ Pixel Meeting Room   │
+├──────────────────────┤
+│ Current Speaker      │
+├──────────────────────┤
+│ Tabs                 │
+│ Debate / Issues / Log│
+├──────────────────────┤
+│ Content              │
+└──────────────────────┘
+
+모바일에서 좌우로 화면을 스크롤해야 하는 구조는 금지한다.
+
+---
+
+19. 모바일 UX 요구사항
+
+반드시 다음을 만족한다.
+
+horizontal overflow 없음
+
+모든 버튼 touch friendly
+
+44px 이상 touch target 권장
+
+모바일 키보드가 열려도 입력 영역 사용 가능
+
+portrait 정상 지원
+
+landscape 정상 지원
+
+browser resize 대응
+
+주소창이 나타났다 사라져도 UI 깨지지 않음
+
+viewport height 문제 대응
+
+긴 Agent 발언 자동 wrapping
+
+말풍선 화면 밖으로 빠져나가지 않음
+
+Pixel Meeting Room도 모바일에서 정상적으로 축소/재배치되어야 한다.
+
+---
+
+20. Pixel Meeting Room
+
+메인 시각화는 픽셀 아트 기반 회의실이다.
+
+예:
+
+       Agent B
+
+ Agent A   🪑🪑   Agent C
+
+       Moderator
+
+실제로는 원형/사각 회의 테이블 주변에 캐릭터가 배치된다.
+
+각 Agent는 픽셀 캐릭터를 가진다.
+
+---
+
+21. 캐릭터 상태
+
+Agent 상태 예:
+
+IDLE
+
+THINKING
+
+SPEAKING
+
+WAITING
+
+AGREEING
+
+DISAGREEING
+
+ERROR
+
+DONE
+
+UI에서 최소한 다음 정도는 표현한다.
+
+THINKING:
+
+...
+
+SPEAKING:
+
+말풍선
+
+AGREEING:
+
+✓
+
+DISAGREEING:
+
+!
+
+ERROR:
+
+⚠
+
+
+과도한 애니메이션은 피한다.
+
+---
+
+# 22. 말풍선
+
+현재 발언 중인 Agent는 캐릭터 위에 말풍선을 표시한다.
+
+하지만 긴 LLM 답변 전체를 말풍선에 넣으면 안 된다.
+
+말풍선:
+
+```text
+핵심 1~3문장
+
+Transcript:
+
+전체 내용
+
+방식으로 분리한다.
+
+---
+
+23. Desktop 분석 UI
+
+Pixel Room은 재미 요소일 뿐이다.
+
+실제 유용한 정보 역시 보여줘야 한다.
+
+Side Panel에:
+
+현재 Round
+
+Agent 상태
+
+Active Issue
+
+Open Issues
+
+Resolved Issues
+
+Agent Position
+
+Agreement / Disagreement
+
+Judge 상태
+
+등을 표시한다.
+
+---
+
+24. Mobile 분석 UI
+
+작은 화면에서는 Side Panel 대신 Tab 또는 Bottom Sheet를 사용한다.
+
+예:
+
+[Room]
+[Debate]
+[Issues]
+[Agents]
+[Result]
+
+모바일에서는 정보 밀도를 줄이고 핵심 내용을 우선한다.
+
+---
+
+25. Transcript
+
+전체 Debate Transcript를 제공한다.
+
+필터:
+
+All
+
+Proposal
+
+Critique
+
+Defense
+
+Alternative
+
+Judge
+
+Agent별 필터도 제공한다.
+
+---
+
+26. Raw Event Log
+
+일반 Debate transcript와 Raw Event Log는 분리한다.
+
+Raw Event Log는 개발/디버깅 용도다.
+
+단, Agent 내부 hidden reasoning을 노출하는 것이 아니다.
+
+예:
+
+Agent A started
+
+Agent A completed
+
+Round 2 started
+
+Issue #3 created
+
+Judge started
+
+정도만 보여준다.
+
+---
+
+27. Token / Cost Observability
+
+가능하면 Agent별 usage를 표시한다.
+
+예:
+
+Agent A
+input tokens
+output tokens
+elapsed time
+estimated cost
+
+하지만 provider가 usage 정보를 제공하지 않으면 강제로 추정하지 않아도 된다.
+
+CLI 기반 Agent의 경우 정확한 token usage를 얻지 못할 수 있으므로:
+
+unknown
+
+을 허용한다.
+
+---
+
+28. Debate 저장
+
+모든 Debate 기록을 저장한다.
+
+예:
+
+Debate
+AgentRun
+Message
+Issue
+Decision
+Event
+
+Debate 종료 후 다시 열 수 있어야 한다.
+
+---
+
+29. Replay 기능
+
+과거 Debate를 다시 볼 수 있어야 한다.
+
+최종 목표는 저장된 이벤트를 시간 순으로 재생하여:
+
+Agent Thinking
+
+Agent Speaking
+
+Issue 생성
+
+Round 변경
+
+Judge 결과
+
+를 다시 보여주는 것이다.
+
+Replay는 초기 Phase에서 완성할 필요는 없다.
+
+Architecture는 가능하도록 설계한다.
+
+---
+
+30. Debate 데이터 모델 예시
+
+Debate:
+
+id
+title
+question
+status
+created_at
+started_at
+completed_at
+current_round
+
+Agent:
+
+id
+display_name
+adapter_type
+provider
+model
+role
+anonymous_label
+
+AgentRun:
+
+id
+debate_id
+agent_id
+round
+status
+started_at
+finished_at
+latency
+usage
+
+Message:
+
+id
+debate_id
+agent_id
+round
+type
+target_agent
+issue_id
+content
+summary
+created_at
+
+Issue:
+
+id
+debate_id
+title
+description
+status
+created_at
+resolved_at
+
+Decision:
+
+id
+debate_id
+issue_id
+decision
+reason
+confidence
+
+Event:
+
+id
+debate_id
+type
+payload
+timestamp
+
+실제 구현 과정에서 개선해도 된다.
+
+---
+
+31. Agent 설정 화면
+
+사용자가 각 역할에 어떤 Agent를 사용할지 지정할 수 있게 한다.
+
+예:
+
+Proposal
+[ Astra ▼ ]
+
+Critic
+[ Sol ▼ ]
+
+Challenger
+[ Luna ▼ ]
+
+Judge
+[ Sol ▼ ]
+
+Escalation Judge
+[ Astra ▼ ]
+
+OpenRouter Agent도 선택 가능해야 한다.
+
+---
+
+32. OpenRouter 모델 관리
+
+OpenRouter API Key를 설정할 수 있게 한다.
+
+그리고 사용 가능한 모델 중 사용자가 직접 모델 ID를 설정하거나 선택할 수 있도록 구조화한다.
+
+무료 모델을 사용할 경우 특히 유용해야 한다.
+
+특정 무료 모델 이름을 코드에 강하게 하드코딩하지 않는다.
+
+---
+
+33. Prompt Template 관리
+
+Agent마다 역할 Prompt가 존재한다.
+
+예:
+
+Proposal Prompt
+
+Critic Prompt
+
+Defense Prompt
+
+Judge Prompt
+
+처음에는 파일 형태로 관리해도 된다.
+
+예:
+
+prompts/
+  proposal.md
+  critic.md
+  defense.md
+  alternative.md
+  judge.md
+
+나중에 UI에서 수정 가능하도록 구조를 고려한다.
+
+---
+
+34. Prompt Injection / Debate Contamination
+
+Agent가 다른 Agent 발언 안에 포함된 명령을 시스템 명령으로 해석하지 않도록 한다.
+
+다른 Agent의 메시지는 항상:
+
+UNTRUSTED DEBATE CONTENT
+
+로 취급한다.
+
+토론 메시지는 정보일 뿐 Agent의 system instruction보다 높은 우선순위를 가지지 않는다.
+
+---
+
+35. Timeout / Failure Handling
+
+어떤 Agent 하나가 실패했다고 Debate 전체가 죽으면 안 된다.
+
+Agent 호출 상태:
+
+QUEUED
+
+RUNNING
+
+COMPLETED
+
+TIMEOUT
+
+FAILED
+
+SKIPPED
+
+를 관리한다.
+
+timeout과 retry를 지원한다.
+
+예:
+
+max_retries = 1
+
+정도로 시작할 수 있다.
+
+---
+
+36. Partial Debate
+
+Agent 하나가 실패해도 나머지 Agent들로 Debate를 계속 진행할 수 있어야 한다.
+
+Judge에게는:
+
+Agent C failed during Round 3.
+
+같은 정보를 전달한다.
+
+---
+
+37. Concurrency
+
+독립 의견 단계처럼 서로의 답변을 볼 필요가 없는 경우 Agent들을 병렬 실행할 수 있다.
+
+예:
+
+Round 1
+
+Agent A ─┐
+Agent B ─┼─ parallel
+Agent C ─┘
+
+하지만 상호 발언을 기반으로 해야 하는 단계는 synchronization barrier 이후 진행한다.
+
+---
+
+38. Context 관리
+
+Round가 늘어나면서 context가 무한히 커지지 않도록 한다.
+
+Agent에게 매번 전체 transcript를 전달하지 않는 구조도 고려한다.
+
+예:
+
+original question
+
+current issue
+
+relevant messages
+
+previous position
+
+debate summary
+
+형태로 context를 구성한다.
+
+하지만 초기 버전에서는 과도하게 최적화하지 않는다.
+
+---
+
+39. UI와 Backend Event Contract
+
+Frontend가 Backend 내부 구현에 종속되지 않도록 Event Contract를 정의한다.
+
+예:
+
+DEBATE_CREATED
+
+DEBATE_STARTED
+
+ROUND_STARTED
+
+AGENT_STARTED
+
+AGENT_MESSAGE
+
+AGENT_COMPLETED
+
+ISSUE_CREATED
+
+ISSUE_UPDATED
+
+JUDGE_STARTED
+
+JUDGE_RESULT
+
+DEBATE_COMPLETED
+
+ERROR
+
+Frontend는 Event를 받아 상태를 갱신한다.
+
+---
+
+40. 폴더 구조
+
+초기에는 monorepo가 적합하다.
+
+예:
+
+multi-agent-debate/
+│
+├─ frontend/
+│
+├─ backend/
+│
+├─ prompts/
+│
+├─ config/
+│
+├─ scripts/
+│
+├─ tests/
+│
+├─ docs/
+│
+├─ docker-compose.yml
+├─ .env.example
+├─ README.md
+└─ AGENTS.md
+
+실제 기술 선택에 따라 개선해도 된다.
+
+---
+
+41. 개발 환경 단순성
+
+가장 중요한 목표 중 하나다.
+
+새 Linux 환경에서 다음 정도면 실행되어야 한다.
+
+Docker 사용:
+
+git clone ...
+cd ...
+cp .env.example .env
+docker compose up
+
+또는 native:
+
+./scripts/setup.sh
+./scripts/start.sh
+
+복잡한 수동 설정을 최소화한다.
+
+---
+
+42. 로그
+
+애플리케이션 로그와 Debate 메시지를 분리한다.
+
+Application Log
+≠
+Debate Transcript
+
+사용자가 보고 싶은 것은 기본적으로 Debate Transcript다.
+
+Application Log는 Debug 화면에서만 확인한다.
+
+---
+
+43. 보안
+
+최소한 다음을 지킨다.
+
+API key 로그 출력 금지
+
+.env Git 제외
+
+CLI auth credential 노출 금지
+
+Agent prompt에 credential 전달 금지
+
+Frontend로 secret 전달 금지
+
+---
+
+44. Phase 계획
+
+다음 순서로 개발한다.
+
+---
+
+Phase 0 — Architecture & Specification
+
+코딩하지 않는다.
+
+다음을 작성한다.
+
+architecture.md
+
+debate-protocol.md
+
+event-contract.md
+
+data-model.md
+
+agent-adapter.md
+
+mobile-ui.md
+
+그리고 전체 Repository 구조를 설계한다.
+
+이 단계에서 기술 선택을 확정한다.
+
+---
+
+Phase 1 — Mock Debate MVP
+
+실제 LLM을 연결하지 않는다.
+
+Mock Agent 3개를 만든다.
+
+예:
+
+Agent A
+Agent B
+Agent C
+
+정해진 fake response를 이용해 실제 Debate처럼 움직인다.
+
+구현:
+
+Debate Engine
+
+Round State Machine
+
+Event Stream
+
+SQLite
+
+Basic API
+
+Responsive Web UI
+
+Pixel Meeting Room
+
+Transcript
+
+Issue Panel
+
+목적은 모델 없이 시스템 구조와 UI를 검증하는 것이다.
+
+---
+
+Phase 2 — Local Agent Adapter
+
+실제 로컬 CLI Agent를 하나 연결한다.
+
+가장 단순한 Agent부터 연결한다.
+
+Agent Adapter abstraction이 올바른지 검증한다.
+
+다음 문제를 처리해야 한다.
+
+process spawn
+
+stdin
+
+stdout
+
+timeout
+
+exit code
+
+response parsing
+
+cancellation
+
+CLI의 raw 로그는 Debate Message로 보내지 않는다.
+
+---
+
+Phase 3 — Multi-Agent Integration
+
+Astra / Sol / Luna 등 여러 Agent Adapter를 연결한다.
+
+익명 mapping을 적용한다.
+
+Round 1 병렬 실행을 지원한다.
+
+Shared Debate Room을 실제 모델 대상으로 동작시킨다.
+
+---
+
+Phase 4 — OpenRouter Adapter
+
+OpenRouter Adapter를 추가한다.
+
+환경변수 기반 API key를 사용한다.
+
+사용자가 모델 ID를 지정할 수 있게 한다.
+
+무료 모델도 다른 Agent와 완전히 동일한 인터페이스로 동작해야 한다.
+
+---
+
+Phase 5 — Judge / Consensus / Escalation
+
+Judge를 구현한다.
+
+다음 기능을 추가한다.
+
+Issue resolution
+
+consensus detection
+
+confidence
+
+early termination
+
+Judge escalation
+
+기본 Judge가 확신하지 못하면 상위 Agent에게 escalation할 수 있게 한다.
+
+---
+
+Phase 6 — Debate Intelligence
+
+토론 품질을 개선한다.
+
+예:
+
+중복 주장 감지
+
+새로운 반론 우선
+
+unresolved issue 중심 토론
+
+debate summary
+
+context trimming
+
+role-aware prompts
+
+단 이것은 deterministic logic과 LLM 판단을 적절히 분리한다.
+
+---
+
+Phase 7 — UX Polish
+
+Pixel Meeting Room을 개선한다.
+
+character animation
+
+speech bubble
+
+thinking indicator
+
+agreement/disagreement animation
+
+round transition
+
+mobile bottom sheet
+
+responsive layout
+
+성능과 모바일 안정성을 우선한다.
+
+---
+
+Phase 8 — Replay / History / Metrics
+
+다음을 추가한다.
+
+Debate History
+
+Replay
+
+Agent latency
+
+Token usage
+
+Cost
+
+Debate duration
+
+Round duration
+
+---
+
+45. 테스트 전략
+
+테스트를 기능 개발 후 한 번에 하지 않는다.
+
+각 Phase마다 자동 테스트를 작성한다.
+
+Backend:
+
+unit test
+
+state machine test
+
+adapter test
+
+API test
+
+Frontend:
+
+component test
+
+responsive test
+
+event handling test
+
+가능하면 E2E 테스트도 추가한다.
+
+---
+
+46. 모바일 테스트
+
+최소 다음 viewport를 확인한다.
+
+360 × 800
+
+390 × 844
+
+412 × 915
+
+768 × 1024
+
+1440 × 900
+
+Chrome DevTools만 믿지 말고 responsive CSS가 구조적으로 올바른지 확인한다.
+
+Playwright 등의 E2E 도구가 적합하면 사용한다.
+
+---
+
+47. Definition of Done
+
+각 Phase 완료 시 최소한:
+
+실행 가능
+
+README 최신
+
+테스트 통과
+
+빌드 성공
+
+모바일 레이아웃 깨짐 없음
+
+기존 Phase regression 없음
+
+을 확인한다.
+
+---
+
+48. 코드 품질 원칙
+
+복잡한 추상화를 미리 만들지 않는다.
+
+하지만 다음 경계는 명확하게 유지한다.
+
+UI
+
+API
+
+Debate Engine
+
+Storage
+
+Agent Adapter
+
+Provider Implementation
+
+Provider별 코드가 Debate Engine에 침투하면 안 된다.
+
+---
+
+49. 하지 말아야 할 것
+
+초기부터 다음을 도입하지 않는다.
+
+Kubernetes
+
+Kafka
+
+Redis
+
+Microservice Architecture
+
+Service Mesh
+
+복잡한 인증 시스템
+
+Cloud infrastructure
+
+현재 목적에 과도하다.
+
+필요해지는 시점에만 도입한다.
+
+---
+
+50. 가장 중요한 설계 기준
+
+이 시스템의 핵심 가치는 단순히 AI 여러 개를 동시에 호출하는 것이 아니다.
+
+핵심은:
+
+독립적인 사고
+
+상호 비판
+
+명시적 쟁점 관리
+
+입장 수정
+
+반론 검증
+
+최종 판정
+
+그리고 이 과정의 인간 친화적 시각화
+
+다.
+
+따라서 일반적인 Group Chat UI를 만드는 방향으로 축소해서는 안 된다.
+
+---
+
+51. 사용자가 최종적으로 경험해야 하는 모습
+
+사용자가 질문을 입력한다.
+
+예:
+
+"이 시스템에서 Kafka를 도입하는 것이 맞는가?"
+
+그러면 Pixel Meeting Room에 캐릭터들이 등장한다.
+
+Agent A
+...
+
+Agent A가 발언한다.
+
+말풍선이 나온다.
+
+Agent B가 반대한다.
+
+!
+
+Issue가 생성된다.
+
+Issue #1
+
+Kafka가 이 구조에 필요한가?
+
+CONTESTED
+
+Agent C가 새로운 대안을 제안한다.
+
+Agent A가 기존 입장을 수정한다.
+
+Round가 진행된다.
+
+마지막에는 Judge가 등장하여:
+
+Recommendation
+
+Key Reasons
+
+Rejected Alternatives
+
+Remaining Risks
+
+Confidence
+
+를 보여준다.
+
+사용자는:
+
+누가 무엇을 주장했고
+
+누가 무엇을 공격했고
+
+왜 의견이 바뀌었으며
+
+무슨 쟁점이 남았고
+
+최종적으로 왜 이런 결론이 나왔는지
+
+를 웹페이지 하나에서 이해할 수 있어야 한다.
+
+이것이 프로젝트의 최종 목표다.
+
+---
+
+52. 너의 첫 번째 작업
+
+지금은 코딩하지 마라.
+
+이 전체 요구사항을 기반으로 먼저 Architecture를 검토한다.
+
+다음 내용을 보고하라.
+
+1. 요구사항 중 기술적으로 문제가 될 부분
+2. 불필요하게 복잡한 부분
+3. 더 단순하게 만들 수 있는 부분
+4. 추천 기술 스택과 선택 이유
+5. 전체 시스템 Architecture
+6. Debate State Machine
+7. Agent Adapter 설계
+8. Event Contract 방향
+9. 모바일 UI Architecture
+10. Phase 간 dependency
+11. 향후 큰 문제가 될 가능성이 있는 설계 결정
+12. 수정할 것을 반영한 최종 Phase 계획
+
+특히 내가 제안한 구조를 그대로 따르기만 하지 말고 비판적으로 검토하라.
+
+설계상 문제가 있다면 구현 전에 반드시 지적하라.
+
+하지만 프로젝트의 핵심 목표인:
+
+“여러 익명 AI Agent가 구조화된 토론을 진행하고, 사용자는 그 과정을 픽셀 회의실 기반 웹 UI에서 실시간으로 관찰한다.”
+
+는 변경하지 않는다.
+
+Architecture 검토 결과를 제출한 뒤 멈춰라.
+
+내가 "Phase 0 시작"이라고 명시적으로 지시하기 전에는 파일 생성이나 구현을 시작하지 마라.
