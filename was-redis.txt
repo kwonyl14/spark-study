@@ -1,0 +1,1219 @@
+현재 Spring Boot WAS의 분석 Job 제출 방식을 변경해야 한다.
+
+기존에는 WAS가 Python 분석 파일을 실행하기 위해 Spark Operator에 "SparkApplication"을 제출하는 구조다.
+
+변경 후에는 WAS가 SparkApplication을 직접 제출하지 않는다.
+
+새로운 흐름은 다음과 같다.
+
+Client
+  ↓
+Spring Boot WAS
+  ↓
+분석 요청 검증
+  ↓
+Redis에 Job 명세 / Queue Message / 상태 정보 기록
+  ↓
+KEDA가 Redis의 Scale Signal 감지
+  ↓
+Python Analysis Worker Scale-out
+  ↓
+Worker가 Job 처리
+
+WAS는 분석 Job을 실제로 실행하는 주체가 아니다.
+
+WAS의 책임은 Redis Interface 명세에 따라 분석 Job을 정확하게 생성하고 Redis에 발행하는 것까지다.
+
+기존 Spark Operator / SparkApplication Submit 코드는 즉시 삭제하지 않는다.
+
+Legacy 코드로 보존하되, 신규 분석 요청 흐름에서는 Redis 기반 제출 방식을 사용하도록 변경한다.
+
+---
+
+1. 가장 중요한 기준: WAS - Redis Interface 명세
+
+프로젝트에 제공된 WAS - Redis Interface 명세 문서를 먼저 찾아서 전체 내용을 읽는다.
+
+이 문서가 이번 구현의 Source of Truth다.
+
+문서에는 최소한 다음 내용이 포함되어 있다.
+
+- WAS가 Redis에 작성해야 하는 데이터
+- Queue Message Schema
+- Job 발행 예시
+- 상태 Hash
+- Scale Signal List
+- WAS 기동 절차
+- 동시성 / 용량 계약
+- 장애 발생 시 WAS 관점의 동작
+
+구현 전에 반드시 이 문서를 먼저 분석한다.
+
+Redis 관련 구현에서 다음 항목을 임의로 추측해서 만들지 않는다.
+
+- Redis Key 이름
+- Redis Key prefix
+- Queue 이름
+- Redis 자료구조
+  - List
+  - Hash
+  - Set
+  - Sorted Set
+  - Stream
+  - String
+- Queue Message JSON Schema
+- Field 이름
+- Field type
+- Job status 값
+- Scale Signal 구조
+- TTL
+- expiration 정책
+- 최대 Queue 길이
+- 동시성 제한
+- Retry 정책
+- 발행 순서
+- 상태 초기값
+
+명세에 정의되어 있으면 반드시 그대로 구현한다.
+
+명세와 현재 코드가 충돌하는 경우 이번 작업에서는 Redis Interface 명세를 우선한다.
+
+단, 명세가 모호하거나 서로 충돌하는 부분이 있다면 임의로 결정하지 말고 구현 결과 보고에 명확하게 남긴다.
+
+---
+
+2. 작업 전 현재 프로젝트 분석
+
+코드를 수정하기 전에 현재 프로젝트 전체를 분석한다.
+
+최소한 다음을 확인한다.
+
+현재 환경
+
+- Spring Boot version
+- Java version
+- Redis 관련 dependency 존재 여부
+- Spring Data Redis 사용 여부
+- Lettuce / Jedis 사용 여부
+- Jackson 설정
+- 현재 profile 구조
+- application.yml 구조
+
+현재 분석 Job 제출 흐름
+
+분석 요청 API부터 실제 SparkApplication 제출까지 호출 흐름을 추적한다.
+
+예:
+
+Controller
+  ↓
+Service
+  ↓
+Job 생성
+  ↓
+SparkApplication spec 생성
+  ↓
+Kubernetes Client
+  ↓
+Spark Operator
+
+실제 코드 기준으로 정확한 호출 관계를 파악한다.
+
+다음도 확인한다.
+
+- Job ID 생성 위치
+- Job ID 규칙
+- 분석 Request DTO
+- Service 계층
+- Kubernetes/Spark submit client
+- SparkApplication YAML/spec 생성 코드
+- 분석 상태 저장 위치
+- API Response
+- 예외 처리
+- 테스트 코드
+
+수정 전에 현재 구조를 요약한 뒤 변경을 시작한다.
+
+---
+
+3. 변경 목표
+
+기존:
+
+WAS
+ ↓
+SparkApplication 생성
+ ↓
+Kubernetes API
+ ↓
+Spark Operator
+ ↓
+Python/Spark Job
+
+신규:
+
+WAS
+ ↓
+Redis Interface 명세에 맞는 Job 생성
+ ↓
+Redis 상태 정보 기록
+ ↓
+Redis Queue Message 발행
+ ↓
+Redis Scale Signal 기록
+ ↓
+HTTP Response
+
+이후 작업은 WAS의 책임이 아니다.
+
+KEDA
+ ↓
+Python Analysis Worker
+ ↓
+Job 소비 및 실행
+
+따라서 WAS 코드 안에서 KEDA를 직접 호출하거나 Kubernetes Deployment의 replica 수를 직접 변경하는 로직을 만들지 않는다.
+
+---
+
+4. 기존 Spark Submit 코드는 삭제하지 않는다
+
+현재 존재하는 다음 계열 코드는 삭제하지 않는다.
+
+예:
+
+SparkApplication
+SparkSubmitService
+SparkJobService
+KubernetesClient
+SparkApplicationBuilder
+SparkApplication YAML 생성 코드
+
+실제 클래스명은 현재 프로젝트를 분석해서 확인한다.
+
+신규 Redis 방식으로 교체하면서 기존 Spark Submit 코드는 Legacy 코드로 남겨둔다.
+
+다만 신규 분석 요청의 정상 실행 경로에서는 더 이상 SparkApplication 제출 코드가 호출되지 않도록 한다.
+
+가능하면 다음처럼 책임을 분리한다.
+
+AnalysisJobSubmitter
+ ├─ RedisAnalysisJobSubmitter     ← 신규 기본 구현
+ └─ SparkAnalysisJobSubmitter     ← Legacy
+
+또는 현재 프로젝트 구조상 더 적합한 방식이 있다면 그 구조를 사용한다.
+
+단순히 Architecture Pattern을 적용하기 위해 불필요하게 대규모 리팩터링하지 않는다.
+
+핵심은:
+
+신규 경로 → Redis
+기존 Spark 코드 → 보존
+
+이다.
+
+---
+
+5. Spark 코드를 주석 처리해서 보존하지 않는다
+
+다음과 같은 방식은 사용하지 않는다.
+
+// sparkSubmitService.submit(...);
+redisService.publish(...);
+
+Legacy 코드는 실제 compile 가능한 코드로 유지한다.
+
+가능하면 명확한 class/service boundary로 분리한다.
+
+예:
+
+@Component
+public class RedisAnalysisJobSubmitter
+        implements AnalysisJobSubmitter {
+    ...
+}
+
+@Component
+public class LegacySparkAnalysisJobSubmitter
+        implements AnalysisJobSubmitter {
+    ...
+}
+
+단, interface를 새로 만드는 것이 현재 코드에 과도한 변경을 유발한다면 기존 Spark Service를 유지하고 Redis Service를 별도로 추가하는 구조도 가능하다.
+
+현재 구조에서 가장 단순하고 유지보수 가능한 방식을 선택한다.
+
+---
+
+6. Redis 연결 설정
+
+현재 "application.yml" 환경변수 패턴을 유지한다.
+
+예를 들어 현재 프로젝트가 다음처럼 외부 설정을 사용하고 있다면:
+
+spring:
+  datasource:
+    url: ${ORACLE_URL}
+
+Redis도 같은 방식으로 외부 환경변수 기반 설정을 사용한다.
+
+실제 환경변수 이름은 Redis Interface 명세 또는 현재 배포 설정을 먼저 확인한다.
+
+예:
+
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
+또는 URI 방식이 기존 운영 환경에 정의되어 있다면 해당 방식을 따른다.
+
+임의로 localhost fallback 값을 넣지 않는다.
+
+특히 운영환경에서 환경변수가 빠졌는데 자동으로
+
+localhost:6379
+
+에 붙어버리는 위험한 구조를 만들지 않는다.
+
+필수 설정이 없다면 명확하게 startup 실패하도록 하는 것도 검토한다.
+
+Username / Password / TLS / DB index / Cluster 설정도 명세 및 기존 인프라 설정을 따른다.
+
+---
+
+7. Redis Client 선택
+
+프로젝트에 이미 Spring Data Redis 또는 Redis Client가 있다면 이를 재사용한다.
+
+새 dependency를 추가하기 전에 반드시 현재 dependency를 확인한다.
+
+Spring Boot 버전에 맞지 않는 임의 버전을 추가하지 않는다.
+
+Spring Data Redis를 사용하는 경우 현재 Boot 버전에 맞는 API를 사용한다.
+
+Redis serialization도 명확하게 설정한다.
+
+Queue Message가 JSON이라면 Jackson 기반 직렬화를 우선 검토한다.
+
+Java native serialization은 사용하지 않는다.
+
+예:
+
+JdkSerializationRedisSerializer
+
+형태로 객체를 Redis에 저장하는 것은 피한다.
+
+Redis에는 WAS와 Python Worker 모두 이해할 수 있는 언어 중립적인 데이터 형태가 저장되어야 한다.
+
+---
+
+8. Redis Interface 모델 정의
+
+Redis Interface 명세에 정의된 Queue Message Schema를 기준으로 별도 DTO를 만든다.
+
+예를 들어 명세가 다음 형태라면:
+
+{
+  "job_id": "...",
+  "analysis_type": "...",
+  ...
+}
+
+Java에서도 해당 계약을 정확하게 표현한다.
+
+예:
+
+RedisAnalysisJobMessage
+AnalysisQueueMessage
+
+실제 이름은 프로젝트 convention을 따른다.
+
+중요:
+
+기존 API Request DTO와 Redis Queue Message DTO를 동일 객체로 무조건 재사용하지 않는다.
+
+두 DTO는 역할이 다르다.
+
+API Request DTO
+        ↓
+Service
+        ↓
+Redis Queue Message DTO
+
+로 변환하는 구조를 권장한다.
+
+즉 외부 REST API 계약과 내부 Redis Interface 계약을 분리한다.
+
+---
+
+9. JSON Field 이름을 정확히 맞춘다
+
+Python Worker와 Redis를 통해 통신하기 때문에 JSON field 이름은 특히 중요하다.
+
+명세가 snake_case라면:
+
+{
+  "job_id": "...",
+  "analysis_type": "...",
+  "created_at": "..."
+}
+
+Java property가 camelCase라고 해서 Redis에 다음처럼 저장하면 안 된다.
+
+{
+  "jobId": "...",
+  "analysisType": "..."
+}
+
+필요하면 Jackson:
+
+@JsonProperty("job_id")
+
+등을 사용해서 명세와 정확하게 맞춘다.
+
+Field 존재 여부, null 처리, 기본값, enum 문자열도 명세와 일치시킨다.
+
+---
+
+10. Job ID
+
+현재 WAS에서 이미 Job ID를 생성하고 있다면 기존 규칙을 확인한다.
+
+Job ID가 Python Worker, Redis Status Hash, Queue Message, API Response 등 여러 곳에서 공통 식별자로 사용되므로 하나의 Job에 대해 동일한 ID를 사용한다.
+
+예:
+
+API Request
+     ↓
+jobId 생성
+     ├─ Status Hash
+     ├─ Queue Message
+     ├─ Scale Signal
+     └─ API Response
+
+각 단계에서 Job ID를 새로 생성하지 않는다.
+
+Redis Interface 명세에 별도의 Job ID 규칙이 있다면 명세를 우선한다.
+
+---
+
+11. Redis Job 발행 순서
+
+Redis Interface 명세의 Job 발행 예시와 WAS 기동 절차를 정확히 확인한다.
+
+특히 여러 Redis Key를 순서대로 작성해야 한다면 순서를 명세와 동일하게 구현한다.
+
+예를 들어 개념적으로:
+
+1. Job Status Hash 생성
+2. Queue Message 발행
+3. Scale Signal 기록
+
+일 수도 있고 다른 순서일 수도 있다.
+
+위 순서는 예시일 뿐이며 실제 구현은 반드시 문서 기준으로 한다.
+
+순서가 중요한 이유는 중간 실패 시 다음과 같은 불완전 상태가 생길 수 있기 때문이다.
+
+Status는 없음
+Queue에는 Job 존재
+
+또는:
+
+Status는 존재
+Queue에는 Job 없음
+
+또는:
+
+Queue에는 존재
+Scale Signal 없음
+
+명세에 atomicity 또는 ordering 요구사항이 있다면 그대로 구현한다.
+
+---
+
+12. Atomicity 검토
+
+하나의 API 요청에서 여러 Redis command가 하나의 논리적 Job 발행을 구성한다면 atomicity 요구사항을 확인한다.
+
+명세에서 요구하는 경우:
+
+- Redis Transaction
+- Lua Script
+- Pipeline
+- 원자 명령
+
+중 적절한 방식을 사용한다.
+
+단순 성능 향상을 위한 Pipeline과 atomic transaction을 혼동하지 않는다.
+
+명세에서 atomicity를 요구하지 않는다면 무조건 Lua Script를 도입하지 않는다.
+
+기존 문서의 장애 동작 계약을 기준으로 가장 단순한 구현을 사용한다.
+
+---
+
+13. Status Hash
+
+명세에 정의된 상태 Hash를 정확하게 구현한다.
+
+확인할 사항:
+
+- Redis Key
+- Hash field
+- 최초 status
+- timestamp
+- job id
+- request 정보
+- error 정보
+- TTL
+- Worker가 이후 어떤 field를 변경하는지
+
+WAS는 WAS가 소유한 field만 작성한다.
+
+Worker가 갱신해야 하는 상태를 WAS가 임의로 변경하지 않는다.
+
+예를 들어 status lifecycle이 명세에:
+
+QUEUED
+RUNNING
+SUCCEEDED
+FAILED
+
+라고 정의되어 있다면 WAS는 Job 발행 시 허용된 최초 상태까지만 설정한다.
+
+실제 분석 실행 상태를 WAS가 추측해서 변경하지 않는다.
+
+---
+
+14. Scale Signal List
+
+명세에 "Scale Signal List"가 정의되어 있으므로 해당 계약을 정확히 따른다.
+
+WAS가 직접 KEDA를 호출하지 않는다.
+
+WAS는 명세대로 Redis에 Signal을 작성하고 KEDA는 그것을 관찰한다.
+
+확인할 사항:
+
+- Redis Key
+- 자료구조
+- Push 방향
+- 저장 값
+- Job ID 사용 여부
+- 중복 허용 여부
+- 제거 주체
+- TTL 여부
+- 최대 길이
+- Scale Signal과 Queue Message의 관계
+
+"LPUSH", "RPUSH", "LPOP", "RPOP" 등의 방향을 임의로 결정하지 않는다.
+
+Producer와 Consumer가 서로 다른 방향을 사용하면 FIFO/LIFO가 달라지므로 반드시 명세 그대로 구현한다.
+
+---
+
+15. Queue Message 발행
+
+Queue Message는 Python Worker가 그대로 소비할 수 있는 형태여야 한다.
+
+Queue Message를 Redis에 넣기 직전에 serialize되는 최종 JSON 형태가 명세의 발행 예시와 동일한지 테스트한다.
+
+단순히 Java 객체 equality만 테스트하지 말고 실제 serialized JSON을 검증한다.
+
+예:
+
+Object
+ ↓
+Jackson
+ ↓
+Redis에 저장될 JSON
+
+까지 테스트한다.
+
+---
+
+16. WAS 기동 절차
+
+Redis Interface 명세에 있는 "WAS 기동 절차"를 반드시 구현에 반영한다.
+
+예를 들어 문서에 startup 시 확인해야 하는 Redis Key나 상태가 있다면 이를 확인한다.
+
+단, 구체적인 동작은 문서를 기준으로 한다.
+
+확인할 수 있는 사항 예:
+
+- Redis 연결 확인
+- 필수 Key 초기화
+- 상태 복구
+- Signal List 확인
+- Capacity 정보 확인
+- stale data 처리
+- startup reconciliation
+
+명세에서 WAS가 해야 한다고 명시된 것만 구현한다.
+
+Python Worker 또는 KEDA의 책임을 WAS로 가져오지 않는다.
+
+---
+
+17. 동시성 / 용량 계약
+
+명세의 "동시성 / 용량 계약" 부분을 반드시 읽는다.
+
+여기에서 정의된 제한을 코드가 위반하지 않도록 한다.
+
+확인할 사항:
+
+- 최대 동시 Job 수
+- Queue 최대 길이
+- Worker 최대 수
+- Scale Signal 최대 수
+- 한 사용자의 동시 요청 제한 여부
+- Job별 resource 정보
+- backpressure 정책
+- capacity 초과 시 HTTP 동작
+
+예를 들어 용량 초과 시 명세가 요청을 거절하도록 되어 있다면 WAS가 무조건 Redis Queue에 추가하면 안 된다.
+
+반대로 Queue에 계속 적재하는 것이 계약이라면 WAS에서 임의로 rate limit을 만들지 않는다.
+
+Capacity 초과 시 HTTP status와 API response도 문서에 정의되어 있다면 그대로 따른다.
+
+---
+
+18. 중복 요청 / Idempotency
+
+명세에 Job 중복 처리 규칙이 있다면 반드시 적용한다.
+
+확인할 사항:
+
+- 같은 Job ID 재발행 가능 여부
+- 동일 request 재시도
+- Queue 중복
+- Status Hash가 이미 존재할 경우
+- 네트워크 오류 이후 Client retry
+
+특히 다음 상황을 고려한다.
+
+Redis write 성공
+        ↓
+WAS가 Client response를 보내기 직전에 connection 종료
+        ↓
+Client가 같은 요청 재시도
+
+이 경우 Job이 두 번 등록될 가능성이 있다.
+
+명세에 idempotency 규칙이 있다면 그대로 구현한다.
+
+명세에 없다면 임의로 복잡한 idempotency framework를 만들지 말고 위험 요소를 구현 결과 보고에 남긴다.
+
+---
+
+19. Redis 장애 시 WAS 동작
+
+Redis Interface 명세의 장애 시 WAS 관점 동작을 가장 중요하게 확인한다.
+
+다음 상황별 계약을 코드에 반영한다.
+
+- Redis connection 실패
+- timeout
+- command 실패
+- partial write
+- serialization 실패
+- capacity 초과
+- Redis unavailable
+- reconnect 중 요청
+- startup 시 Redis unavailable
+
+명세에 Retry 정책이 있다면 그대로 구현한다.
+
+명세에 Retry가 없으면 임의로 무한 Retry를 구현하지 않는다.
+
+특히 API request thread를 장시간 blocking시키는 무한 재시도는 금지한다.
+
+---
+
+20. Redis 오류를 성공으로 응답하지 않는다
+
+다음 상황은 금지한다.
+
+Redis Job 발행 실패
+       ↓
+HTTP 200 / 201
+
+Job이 실제로 Queue에 정상 등록되지 않았다면 Client에게 성공으로 응답해서는 안 된다.
+
+어떤 Redis command까지 완료되어야 Job 제출 성공으로 간주하는지는 Interface 명세를 따른다.
+
+---
+
+21. API Response 표준화와 연동
+
+현재 WAS에서는 별도의 API Response 표준화 작업도 수행하고 있다.
+
+공통 Response 규격은 다음이다.
+
+{
+  "status": 200,
+  "timestamp": "2026-10-02T00:30:15Z",
+  "msg": "Success",
+  "data": {}
+}
+
+필드는 다음 4개다.
+
+status
+timestamp
+msg
+data
+
+이번 Redis Job Submit API도 이 공통 규격을 사용한다.
+
+Job 제출 성공 예:
+
+{
+  "status": 202,
+  "timestamp": "2026-10-02T00:30:15Z",
+  "msg": "Accepted",
+  "data": {
+    "jobId": "..."
+  }
+}
+
+위 "202 Accepted"는 예시다.
+
+실제 HTTP Status와 msg는 기존 API 계약 및 Redis Interface 명세를 확인해서 결정한다.
+
+임의로 기존 Client 계약을 변경하지 않는다.
+
+HTTP Status와 body의 "status" 값은 항상 같아야 한다.
+
+---
+
+22. Job API Response DTO
+
+Redis 내부 Queue Message DTO를 HTTP Response로 그대로 반환하지 않는다.
+
+예:
+
+AnalysisRequest
+        ↓
+AnalysisService
+        ↓
+RedisAnalysisJobMessage
+        ↓ Redis
+
+Client Response는 별도의 DTO를 사용한다.
+
+예:
+
+AnalysisJobSubmitResponse
+
+필요한 최소 정보만 반환한다.
+
+Redis 내부 Key, Redis Queue 이름, Scale Signal 내부 정보 등 구현 세부사항은 Client에게 노출하지 않는다.
+
+---
+
+23. 예외 처리
+
+기존 Response 표준화 구현과 통합한다.
+
+Redis 계층에서 발생하는 내부 Exception을 그대로 Controller까지 노출하지 않는다.
+
+예:
+
+RedisConnectionFailureException
+RedisSystemException
+TimeoutException
+SerializationException
+
+등이 Client response의 "msg"로 그대로 나가면 안 된다.
+
+내부 원인은 서버 로그에 남기고 외부에는 표준화된 오류 응답을 반환한다.
+
+예:
+
+{
+  "status": 503,
+  "timestamp": "...",
+  "msg": "Service Unavailable",
+  "data": null
+}
+
+단, 실제 HTTP status는 기존 Error Handling 정책 및 Redis Interface 명세를 따른다.
+
+---
+
+24. Logging
+
+Job 발행 과정에서 운영 추적이 가능하도록 로그를 남긴다.
+
+최소한 다음 정보를 확인한다.
+
+jobId
+request 식별 정보
+Redis publish 성공/실패
+실패 단계
+
+그러나 다음 정보는 로그에 직접 노출하지 않는다.
+
+Redis password
+Oracle password
+MinIO secret key
+Access token
+사용자 민감정보
+전체 대용량 payload
+
+Job ID를 중심으로 WAS 로그 → Redis → Python Worker 로그를 추적할 수 있도록 한다.
+
+현재 프로젝트에 traceId / MDC / OpenTelemetry가 있으면 유지한다.
+
+---
+
+25. Legacy Spark 경로와 로그를 명확히 구분
+
+Legacy Spark Submit과 Redis Submit 로그가 혼동되지 않도록 한다.
+
+예:
+
+analysis job submit method=REDIS jobId=...
+
+Legacy를 실제로 호출할 수 있는 경로가 유지된다면:
+
+analysis job submit method=SPARK_LEGACY jobId=...
+
+같이 운영자가 구분 가능하도록 한다.
+
+단, 기존 logging convention이 있다면 그것을 따른다.
+
+---
+
+26. Kubernetes 관련 코드 제거 범위
+
+Redis 전환 때문에 기존 Kubernetes 관련 dependency나 설정을 성급하게 제거하지 않는다.
+
+Spark legacy 코드가 해당 dependency를 사용한다면 유지해야 한다.
+
+예:
+
+Kubernetes Java Client
+SparkApplication CRD model
+Spark Operator 관련 설정
+
+Legacy 코드를 compile 가능한 상태로 보존해야 하므로 사용 중인 dependency까지 제거하면 안 된다.
+
+Redis 전환으로 완전히 unused가 된 부분만 현재 dependency graph를 확인해서 정리한다.
+
+---
+
+27. Feature Flag 여부
+
+현재 운영 전환 과정에서 Redis 방식과 Legacy Spark 방식의 선택 기능이 이미 존재하는지 확인한다.
+
+이미 profile / property / strategy 선택 구조가 있다면 재사용한다.
+
+예:
+
+analysis:
+  submit-mode: redis
+
+같은 설정이 기존에 존재하지 않는다면 무조건 새 feature flag를 만들지는 않는다.
+
+운영상 Rollback을 위해 의미가 있는 경우에만 도입한다.
+
+도입한다면 기본값과 운영 환경 동작을 명확하게 정의한다.
+
+잘못된 설정 때문에 운영환경에서 Legacy Spark가 자동 선택되는 위험한 fallback은 만들지 않는다.
+
+---
+
+28. Redis Repository / Gateway 계층
+
+Controller 또는 비즈니스 Service에서 직접 "RedisTemplate"을 여러 번 호출하는 구조는 피한다.
+
+예:
+
+redisTemplate.opsForHash()...
+redisTemplate.opsForList()...
+redisTemplate.opsForValue()...
+
+가 Controller/Service 여러 곳에 흩어지지 않도록 한다.
+
+Redis Interface 계약을 담당하는 단일 계층을 만든다.
+
+예:
+
+AnalysisJobRedisRepository
+
+또는
+
+AnalysisJobRedisGateway
+
+역할 예:
+
+initializeJobStatus(...)
+publishJob(...)
+publishScaleSignal(...)
+
+실제 메서드는 Interface 명세에 맞춰 설계한다.
+
+비즈니스 Service는 Redis 자료구조 세부사항을 알 필요가 없도록 한다.
+
+---
+
+29. Service 책임
+
+개념적으로 다음 역할 분리를 지향한다.
+
+Controller
+    ↓
+AnalysisService
+    ├─ Request validation
+    ├─ Job ID 생성
+    ├─ Redis Message 변환
+    ↓
+AnalysisJobPublisher
+    ↓
+AnalysisJobRedisRepository
+    ↓
+Redis
+
+다만 현재 프로젝트가 이미 계층 구조를 가지고 있다면 기존 구조를 최대한 유지한다.
+
+단순한 작업에 불필요한 class를 많이 추가하지 않는다.
+
+---
+
+30. 테스트
+
+최소한 다음 테스트를 작성하거나 기존 테스트를 수정한다.
+
+정상 Job Submit
+
+검증:
+
+API 요청
+ ↓
+Job ID 생성
+ ↓
+Status 저장
+ ↓
+Queue Message 저장
+ ↓
+Scale Signal 저장
+ ↓
+성공 Response
+
+Redis Interface 명세에 정의된 정확한 순서와 데이터가 기록되는지 검증한다.
+
+---
+
+Queue Message Schema
+
+실제 Redis에 저장되는 JSON이 명세와 동일한지 검증한다.
+
+특히:
+
+field name
+field type
+null
+timestamp
+enum
+jobId
+
+를 확인한다.
+
+---
+
+Status Hash
+
+명세의 최초 상태 및 field가 정확히 저장되는지 검증한다.
+
+---
+
+Scale Signal
+
+정확한 Redis Key와 자료구조를 사용하고 정확한 값을 기록하는지 검증한다.
+
+---
+
+Redis 장애
+
+Redis command가 실패했을 때:
+
+- 성공 API Response를 반환하지 않는지
+- 표준 Error Response가 반환되는지
+- 로그가 남는지
+
+검증한다.
+
+---
+
+Partial Failure
+
+Job 발행 과정이 여러 command로 이루어져 있다면 중간 단계 실패를 테스트한다.
+
+예:
+
+Status 성공
+Queue 실패
+
+또는 실제 명세에 존재하는 failure point.
+
+명세가 규정한 방식대로 동작하는지 검증한다.
+
+---
+
+Duplicate
+
+명세에 중복 처리 규칙이 있다면 중복 Job 발행 테스트를 작성한다.
+
+---
+
+Legacy Spark 코드
+
+신규 Redis submit 경로에서 기존 Spark submit method가 호출되지 않는지 검증한다.
+
+가능하면 mock/spy를 통해 확인한다.
+
+verify(sparkSubmitService, never()).submit(...)
+
+와 동등한 검증을 사용한다.
+
+동시에 Legacy Spark 코드는 compile 가능한 상태로 유지한다.
+
+---
+
+31. 가능하면 Redis 통합 테스트
+
+프로젝트 테스트 환경이 허용한다면 Redis와의 통합 테스트도 검토한다.
+
+이미 Testcontainers가 사용 중이면 Redis Testcontainer 사용을 우선 검토한다.
+
+새로운 테스트 인프라 도입 비용이 지나치게 크다면 unit test + serialization test로 제한해도 된다.
+
+사내 CI 환경에서 Docker 사용이 불가능하다면 Testcontainers를 무리하게 추가하지 않는다.
+
+---
+
+32. 절대 하지 말아야 하는 것
+
+Interface 명세 무시하고 Redis 구조 임의 설계
+
+금지.
+
+Spark legacy 코드 삭제
+
+금지.
+
+Controller에서 직접 Redis 호출
+
+가급적 금지.
+
+KEDA API 직접 호출
+
+금지.
+
+Kubernetes replica 직접 조절
+
+금지.
+
+Redis Java Serialization 사용
+
+금지.
+
+Redis 장애인데 성공 응답
+
+금지.
+
+Redis 내부 Exception을 Client에 그대로 노출
+
+금지.
+
+모든 Redis 오류에 무한 Retry
+
+금지.
+
+Redis Key 이름 하드코딩을 여러 클래스에 분산
+
+금지.
+
+Interface 명세에 없는 field 임의 추가
+
+금지.
+
+Queue Message와 REST Response DTO를 무조건 동일 객체로 사용
+
+금지.
+
+신규 Redis 기능 구현을 위해 Legacy Spark 코드를 대규모 리팩터링
+
+금지.
+
+---
+
+33. 구현 결과 보고 형식
+
+코드 수정 완료 후 다음 형식으로 결과를 보고한다.
+
+1. 기존 구조
+
+실제 코드 기준으로 기존 분석 Job Submit 흐름을 작성한다.
+
+Controller
+ → ...
+ → SparkApplication
+ → Kubernetes
+
+2. 변경 구조
+
+Controller
+ → ...
+ → Redis
+ → KEDA
+ → Worker
+
+단, KEDA와 Worker는 WAS 외부 영역임을 명시한다.
+
+3. Redis Interface 명세 적용 내역
+
+표 형태로 정리한다.
+
+명세 항목                     구현 위치
+------------------------------------------------
+Queue Message Schema         ...
+Status Hash                  ...
+Scale Signal                 ...
+WAS Startup                  ...
+Concurrency / Capacity       ...
+Failure Handling             ...
+
+4. 신규 파일
+
+각 신규 파일과 역할을 설명한다.
+
+예:
+
+RedisAnalysisJobPublisher.java
+- 분석 Job 발행 orchestration
+
+AnalysisJobRedisRepository.java
+- Redis Interface 구현
+
+AnalysisJobMessage.java
+- Python Worker와 공유하는 Queue Message Contract
+
+실제 생성된 파일 기준으로 작성한다.
+
+5. 수정 파일
+
+기존 파일별 변경 내용을 설명한다.
+
+특히 기존 Spark Submit 호출이 어느 위치에서 Redis Submit으로 변경됐는지 명시한다.
+
+6. Legacy 유지 내용
+
+어떤 Spark 관련 코드가 남아있는지 설명한다.
+
+또한 신규 정상 경로에서는 해당 코드가 호출되지 않음을 확인한다.
+
+7. Redis Write Flow
+
+실제 구현 기준으로 Redis command 순서를 정확히 작성한다.
+
+예:
+
+1. ...
+2. ...
+3. ...
+
+명세의 순서와 일치하는지 설명한다.
+
+8. 정상 요청 예
+
+REST 요청 이후 실제 Redis에 저장되는:
+
+- Queue Message
+- Status Hash
+- Scale Signal
+
+예시를 보여준다.
+
+실제 구현 serialization 결과를 기준으로 한다.
+
+9. 장애 시 동작
+
+다음을 구분해서 설명한다.
+
+Redis 연결 실패
+Redis command 실패
+Partial write
+Capacity 초과
+Serialization 실패
+
+각 경우 HTTP response와 Redis 상태가 어떻게 되는지 작성한다.
+
+10. 테스트 결과
+
+실행한 명령과 결과를 작성한다.
+
+예:
+
+./gradlew test
+
+또는 Maven이면 실제 명령을 사용한다.
+
+어떤 테스트를 추가했는지도 정리한다.
+
+11. 미확정 사항
+
+Redis Interface 명세에서 모호하거나 구현할 수 없었던 부분이 있다면 반드시 별도로 작성한다.
+
+추측해서 숨기지 않는다.
+
+---
+
+34. 최종 검증
+
+작업 완료 전 다음을 다시 확인한다.
+
+- 신규 API 요청이 Spark Operator로 가지 않는가?
+- Spark legacy 코드는 삭제되지 않았는가?
+- Redis Interface 명세와 Key가 정확히 같은가?
+- Redis 자료구조가 정확한가?
+- Queue Message JSON Schema가 정확한가?
+- Status Hash가 정확한가?
+- Scale Signal이 정확한가?
+- Redis command 순서가 정확한가?
+- concurrency/capacity 계약을 지켰는가?
+- 장애 동작이 명세와 같은가?
+- Redis 장애 시 성공 응답을 주지 않는가?
+- Redis 내부 구현이 REST API에 노출되지 않는가?
+- 공통 "status / timestamp / msg / data" Response 형식이 유지되는가?
+- Swagger가 신규 API 동작을 정확하게 표현하는가?
+- 기존 Spark 관련 dependency를 잘못 제거하지 않았는가?
+- 테스트가 통과하는가?
+
+---
+
+35. 구현 원칙
+
+이번 작업에서 가장 중요한 원칙은 다음 세 가지다.
+
+첫째, Redis Interface 명세가 최우선 계약이다.
+
+문서에 정의된 Redis Key, Message Schema, Status Hash, Scale Signal, 동시성/용량, 장애 처리 규칙을 코드 편의에 맞춰 변경하지 않는다.
+
+둘째, WAS는 Job 실행기가 아니라 Job Producer다.
+
+WAS의 역할은 분석 요청을 검증하고 Job을 Redis에 안전하게 등록하는 것까지다. KEDA Scaling이나 Python Worker 실행 로직을 WAS 안으로 가져오지 않는다.
+
+셋째, Spark Submit은 신규 흐름에서 제거하되 Legacy 코드 자체는 보존한다.
+
+신규 요청의 production path는 Redis 기반으로 전환하고 기존 Spark Operator 제출 구현은 향후 참고 및 rollback 가능성을 위해 compile 가능한 Legacy 코드로 유지한다.
+
+먼저 WAS - Redis Interface 명세와 현재 코드베이스를 전체적으로 분석한 뒤 실제 구현을 진행하라.
