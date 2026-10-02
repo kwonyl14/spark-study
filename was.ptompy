@@ -1,0 +1,878 @@
+현재 Spring Boot WAS의 API 응답 처리 방식을 표준화해야 한다.
+
+현재 상태는 Controller마다 별도의 공통 Response DTO 규격이 없고, Spring Framework가 만들어주는 응답 또는 각 Controller의 반환 객체가 그대로 HTTP Response로 내려가는 구조다.
+
+Python Analysis 애플리케이션에서는 이미 아래 규격을 공통 응답 형식으로 사용하고 있다.
+
+return {
+    "status": int(status),
+    "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    "msg": msg or default_msg(status),
+    "data": data,
+}
+
+Spring Boot WAS도 Python 애플리케이션과 동일한 응답 계약을 사용하도록 수정한다.
+
+이번 작업의 목표는 다음 4가지다.
+
+1. WAS API Response 형식 표준화
+2. Error Handling 표준화
+3. Controller Request/Response DTO 정리
+4. Swagger/OpenAPI Docs에 표준 응답 구조 반영
+
+기존 비즈니스 로직에는 가능한 한 영향을 주지 않고 공통 계층에서 처리하도록 구현한다.
+
+---
+
+1. 작업 전 반드시 현재 프로젝트 분석
+
+코드를 수정하기 전에 아래 내용을 먼저 확인한다.
+
+- Spring Boot 버전
+- Java 버전
+- Spring MVC / WebFlux 중 무엇을 사용하는지
+- 현재 Controller 구조
+- 현재 Controller 반환 타입
+  - DTO
+  - Entity
+  - Map
+  - ResponseEntity
+  - String
+  - void
+  - 기타
+- 현재 Exception Handler 존재 여부
+- 현재 Filter / Interceptor 존재 여부
+- Spring Security 사용 여부
+- Swagger/OpenAPI 라이브러리 및 정확한 버전
+  - springdoc-openapi인지
+  - springfox인지
+  - 기타인지
+- 현재 package 구조
+- 기존 테스트 구조
+
+기존 프로젝트 컨벤션을 우선 사용하고, 불필요한 패키지 구조 변경이나 대규모 리팩터링은 하지 않는다.
+
+라이브러리를 새로 추가해야 한다면 현재 Spring Boot 버전과 호환되는 버전인지 확인한 뒤 추가한다.
+
+이미 동일한 기능을 수행하는 클래스가 있다면 새 클래스를 중복해서 만들지 말고 기존 코드를 확장한다.
+
+---
+
+2. 최종 API Response 규격
+
+WAS의 일반적인 JSON API 응답은 아래 구조로 통일한다.
+
+{
+  "status": 200,
+  "timestamp": "2026-10-02T00:30:15Z",
+  "msg": "Success",
+  "data": {
+    "jobId": "regression-20261002093000-12345",
+    "status": "RUNNING"
+  }
+}
+
+필드는 반드시 아래 의미를 가진다.
+
+status
+
+HTTP Status Code를 integer로 넣는다.
+
+예:
+
+"status": 200
+
+HTTP 실제 Status Code와 JSON body의 "status"는 반드시 동일해야 한다.
+
+예를 들어:
+
+HTTP:
+
+404 Not Found
+
+Body:
+
+{
+  "status": 404,
+  ...
+}
+
+HTTP 응답은 200인데 body의 status만 404로 내려가는 구조를 만들지 않는다.
+
+---
+
+timestamp
+
+Python과 동일하게 UTC 기준 ISO-8601 형식을 사용한다.
+
+형식:
+
+yyyy-MM-dd'T'HH:mm:ss'Z'
+
+예:
+
+"timestamp": "2026-10-02T00:30:15Z"
+
+조건:
+
+- UTC
+- millisecond 제외
+- timezone offset "+00:00"가 아니라 "Z"
+- JVM system timezone에 의존하지 않을 것
+
+Java 구현에서는 "Instant", "Clock", "DateTimeFormatter" 등의 표준 API를 사용한다.
+
+---
+
+msg
+
+사용자가 명시적으로 메시지를 지정한 경우 해당 메시지를 사용하고, 없으면 HTTP status별 기본 메시지를 사용한다.
+
+Python 코드의 아래 동작과 동일한 개념이다.
+
+msg or default_msg(status)
+
+Java에서도 기본 메시지 결정 로직을 한 곳에서 관리한다.
+
+예:
+
+200 -> Success
+201 -> Created
+400 -> Bad Request
+401 -> Unauthorized
+403 -> Forbidden
+404 -> Not Found
+405 -> Method Not Allowed
+409 -> Conflict
+415 -> Unsupported Media Type
+500 -> Internal Server Error
+503 -> Service Unavailable
+
+Python 프로젝트의 "default_msg(status)" 구현을 현재 저장소나 참조 가능한 코드에서 확인할 수 있다면 반드시 Python과 정확히 동일한 문자열을 사용한다.
+
+확인할 수 없다면 위와 같이 중앙화된 DefaultMessageResolver 또는 동등한 구조를 만들고 나중에 쉽게 변경할 수 있도록 한다.
+
+Controller마다 하드코딩하지 않는다.
+
+---
+
+data
+
+실제 API Response DTO 또는 오류 상세 데이터가 들어간다.
+
+정상:
+
+{
+  "status": 200,
+  "timestamp": "2026-10-02T00:30:15Z",
+  "msg": "Success",
+  "data": {
+    "jobId": "abc",
+    "status": "RUNNING"
+  }
+}
+
+응답 데이터가 없는 경우:
+
+{
+  "status": 200,
+  "timestamp": "2026-10-02T00:30:15Z",
+  "msg": "Success",
+  "data": null
+}
+
+---
+
+3. 공통 Response DTO 구현
+
+Generic을 사용하는 공통 DTO를 만든다.
+
+개념적으로 다음과 같은 형태다.
+
+public class ApiResponse<T> {
+
+    private int status;
+    private String timestamp;
+    private String msg;
+    private T data;
+
+}
+
+프로젝트의 Java 버전에 따라 "record", Lombok, 일반 class 중 현재 코드 스타일에 맞는 것을 사용한다.
+
+필요하면 다음과 같은 factory method를 제공한다.
+
+ApiResponse.success(...)
+ApiResponse.of(...)
+ApiResponse.error(...)
+
+단, HTTP Status와 body status가 서로 다르게 설정될 수 있는 API를 만들지 않도록 설계한다.
+
+가능하면 "HttpStatus" 또는 "HttpStatusCode"를 입력받아 내부에서 integer status를 결정하게 한다.
+
+---
+
+4. 정상 응답 자동 wrapping
+
+Controller마다 아래 코드를 반복해서 작성하게 만들지 않는다.
+
+금지하고 싶은 형태:
+
+return ApiResponse.success(service.getJob(id));
+
+모든 Controller에 이런 boilerplate가 추가되지 않도록 공통 계층에서 응답을 wrapping하는 방식을 우선 적용한다.
+
+상위 설계 요구사항에는 "WAS 내 응답 처리 표준화(by filter)"라고 되어 있으므로 공통 처리 계층을 사용한다.
+
+다만 Spring MVC에서 정상 Controller 응답을 Servlet Filter에서 JSON 문자열 단위로 강제로 재가공하면 다음과 같은 문제가 생길 수 있다.
+
+- Response body buffering 필요
+- JSON 이중 serialization 가능성
+- String response 문제
+- Streaming response 문제
+- 파일 다운로드 문제
+- ResponseEntity header 보존 문제
+- Swagger/OpenAPI endpoint 영향
+- Content-Type 문제
+
+따라서 무조건 Filter 하나만으로 모든 정상 응답을 가공하지 말고 현재 Spring 구조에서 가장 안전한 방법을 선택한다.
+
+권장 방향은 다음이다.
+
+- 정상 Controller Response wrapping
+  - "ResponseBodyAdvice" 등 Spring MVC 공식 확장 지점 사용 가능
+- 예외/공통 오류 처리
+  - Error Handling Filter
+  - 필요한 경우 "@RestControllerAdvice"
+- Filter
+  - cross-cutting error handling 또는 최종 응답 처리 역할
+
+즉 "Filter 기반 공통 처리"라는 설계 목적은 유지하되, 정상 JSON 응답 wrapping까지 Servlet Response를 문자열로 읽고 다시 JSON으로 serialize하는 취약한 구현은 피한다.
+
+구현 후 어떤 책임을 Filter가 담당하고 어떤 책임을 Spring MVC Advice가 담당하는지 주석 또는 문서로 간단히 설명한다.
+
+---
+
+5. 정상 Response 처리 규칙
+
+예를 들어 현재 Controller가 다음과 같다면:
+
+@GetMapping("/{jobId}")
+public JobResponse getJob(...) {
+    return service.getJob(...);
+}
+
+실제 HTTP 응답은 자동으로 다음처럼 나가야 한다.
+
+{
+  "status": 200,
+  "timestamp": "2026-10-02T00:30:15Z",
+  "msg": "Success",
+  "data": {
+    "...": "..."
+  }
+}
+
+Controller가 "ResponseEntity<T>"를 반환한다면 HTTP Status와 Header를 유지한다.
+
+예:
+
+return ResponseEntity
+    .status(HttpStatus.CREATED)
+    .header(...)
+    .body(response);
+
+결과:
+
+HTTP/1.1 201 Created
+
+{
+  "status": 201,
+  "timestamp": "...",
+  "msg": "Created",
+  "data": {
+    ...
+  }
+}
+
+기존 custom header도 유지해야 한다.
+
+이미 "ApiResponse<?>" 형태인 객체는 다시 wrapping하지 않는다.
+
+즉 아래처럼 이중 wrapping되면 안 된다.
+
+{
+  "status": 200,
+  "data": {
+    "status": 200,
+    "data": ...
+  }
+}
+
+---
+
+6. wrapping에서 제외해야 하는 응답
+
+무조건 모든 Response를 JSON envelope로 감싸지 않는다.
+
+최소한 다음 경우는 별도 처리 여부를 검토한다.
+
+- Swagger UI
+- "/v3/api-docs/**"
+- 정적 resource
+- 파일 다운로드
+- "Resource"
+- byte[]
+- StreamingResponseBody
+- Server-Sent Events가 있다면 SSE
+- HTTP HEAD
+- HTTP 204 No Content
+
+특히 "204 No Content"는 HTTP 규격상 response body가 없어야 하므로 억지로 ApiResponse body를 넣지 않는다.
+
+프로젝트에 위 기능이 실제로 없다면 불필요하게 복잡한 코드를 추가하지 말되, 정상 JSON API에 영향을 주지 않도록 설계한다.
+
+---
+
+7. Error Handling Filter 구현
+
+공통 오류 처리를 담당하는 "ErrorHandlingFilter" 또는 현재 프로젝트 naming convention에 맞는 Filter를 구현한다.
+
+가능하면 "OncePerRequestFilter" 기반으로 구현한다.
+
+예외가 최종적으로 처리되지 않고 Filter까지 전달된 경우 동일한 ApiResponse 규격으로 반환한다.
+
+예:
+
+HTTP:
+
+500 Internal Server Error
+
+Body:
+
+{
+  "status": 500,
+  "timestamp": "2026-10-02T00:30:15Z",
+  "msg": "Internal Server Error",
+  "data": null
+}
+
+예외 stack trace나 내부 exception message를 클라이언트에 그대로 노출하지 않는다.
+
+예를 들어 아래와 같은 내부 정보가 response에 직접 노출되면 안 된다.
+
+NullPointerException
+SQL Exception
+DB host
+stack trace
+internal class name
+filesystem path
+
+상세한 예외 정보는 서버 로그에 남기고 외부 응답은 표준화한다.
+
+---
+
+8. Spring MVC 레벨 예외도 동일하게 처리
+
+Servlet Filter만으로 Spring MVC 내부에서 처리되는 모든 오류를 잡을 수 있다고 가정하지 않는다.
+
+현재 프로젝트에서 발생 가능한 아래 예외들을 확인하고 동일한 ApiResponse 형식으로 처리한다.
+
+최소 대상:
+
+- "MethodArgumentNotValidException"
+- "ConstraintViolationException"
+- "HttpMessageNotReadableException"
+- "MethodArgumentTypeMismatchException"
+- 필수 Request Parameter 누락
+- 지원하지 않는 HTTP Method
+- 지원하지 않는 Media Type
+- 존재하지 않는 API
+- 비즈니스 예외
+- 예상하지 못한 Exception
+
+Spring MVC 단계의 예외 처리가 필요하면 "@RestControllerAdvice" / "@ExceptionHandler"를 함께 사용한다.
+
+중요한 목표는 "Filter만 사용했는가"가 아니라 클라이언트 입장에서 모든 오류가 동일한 API 계약을 가지는 것이다.
+
+Filter와 ControllerAdvice가 서로 같은 예외를 두 번 처리하지 않도록 책임을 명확히 나눈다.
+
+---
+
+9. Validation 오류
+
+"@Valid", "@Validated" 사용 중 발생한 validation 오류도 표준 응답으로 내려준다.
+
+예:
+
+{
+  "status": 400,
+  "timestamp": "2026-10-02T00:30:15Z",
+  "msg": "Bad Request",
+  "data": {
+    "errors": [
+      {
+        "field": "jobId",
+        "message": "must not be blank"
+      }
+    ]
+  }
+}
+
+Validation 오류의 "data" 상세 구조는 현재 프로젝트 요구사항에 맞게 간단하게 정의한다.
+
+단, validation 결과를 문자열 하나로 합쳐서 파싱하기 어렵게 만들지 말고 구조화된 DTO를 사용하는 방향을 우선한다.
+
+ValidationErrorResponse 또는 FieldError DTO가 필요하면 생성한다.
+
+---
+
+10. Business Exception
+
+현재 서비스 코드에서 비즈니스 오류를 표현하기 위해 RuntimeException 등을 직접 throw하고 있다면 현재 사용 현황을 확인한다.
+
+필요한 경우 다음과 같은 공통 구조를 만든다.
+
+BusinessException
+ErrorCode
+
+예:
+
+throw new BusinessException(ErrorCode.JOB_NOT_FOUND);
+
+ErrorCode에는 가능하면 다음 정보를 관리한다.
+
+HTTP Status
+error code(optional)
+default message
+
+단, 이번 표준 Response 규격에는 별도의 "code" 필드가 없다.
+
+따라서 별도의 비즈니스 error code를 JSON root field로 임의 추가하지 않는다.
+
+현재 요구 형식은 반드시 다음 4개 필드를 기본으로 유지한다.
+
+status
+timestamp
+msg
+data
+
+업무 error code가 반드시 필요하면 "data" 내부에 넣거나 기존 프로젝트 요구사항을 먼저 확인한다.
+
+Python 응답 형식과 WAS 응답 형식이 달라지지 않도록 한다.
+
+---
+
+11. DTO 적용
+
+현재 Controller가 Entity, Map, 임의 Object 등을 직접 반환하는 부분을 조사한다.
+
+외부 API 응답은 가능한 한 endpoint 목적에 맞는 Response DTO를 사용한다.
+
+예:
+
+JobResponse
+AnalysisRequest
+AnalysisResponse
+JobStatusResponse
+...
+
+다음 형태는 특별한 이유가 없다면 제거한다.
+
+Map<String, Object>
+HashMap
+Entity 직접 반환
+
+Request 역시 구조가 명확한 경우 Request DTO를 사용한다.
+
+DTO 이름과 package는 기존 프로젝트 naming convention을 따른다.
+
+단순히 DTO 적용을 위해 비즈니스 계층 전체를 대규모로 변경하지 않는다.
+
+Controller boundary의 Request/Response 계약을 명확히 하는 것이 목적이다.
+
+---
+
+12. Swagger / OpenAPI Docs
+
+현재 사용 중인 Swagger/OpenAPI 라이브러리를 확인한 뒤 그 버전에 맞게 작성한다.
+
+버전을 추측해서 annotation이나 dependency를 추가하지 않는다.
+
+Swagger에서 모든 API가 실제 반환 형식을 정확히 표현해야 한다.
+
+기존에는 Swagger에 다음처럼 표시될 수 있다.
+
+{
+  "jobId": "...",
+  "status": "RUNNING"
+}
+
+실제 API 표준화 이후에는 다음 구조가 문서에 보여야 한다.
+
+{
+  "status": 200,
+  "timestamp": "2026-10-02T00:30:15Z",
+  "msg": "Success",
+  "data": {
+    "jobId": "...",
+    "status": "RUNNING"
+  }
+}
+
+ApiResponse DTO 각 필드에 Swagger Schema 설명을 추가한다.
+
+예:
+
+status:
+  HTTP status code
+
+timestamp:
+  UTC response timestamp
+  format example: 2026-10-02T00:30:15Z
+
+msg:
+  response message
+
+data:
+  actual response payload
+
+Generic ApiResponse의 "data"가 Swagger에서 단순 Object로만 표시되지 않도록 가능한 범위에서 실제 endpoint Response DTO Schema가 연결되도록 구성한다.
+
+예:
+
+ApiResponse<JobResponse>
+ApiResponse<JobStatusResponse>
+
+오류 응답도 Swagger에 작성한다.
+
+최소한 프로젝트에서 실제 사용할 수 있는 다음 HTTP status들을 확인하여 문서화한다.
+
+400
+401/403 - Spring Security 사용 시
+404
+405
+409 - 실제 business conflict가 있는 경우
+415
+500
+503 - 실제 사용하는 경우
+
+모든 endpoint에 똑같은 annotation을 무식하게 복붙하지 말고 공통 OpenAPI 설정이나 reusable schema/response를 사용할 수 있는지 먼저 검토한다.
+
+다만 공통화 때문에 Swagger에서 실제 data DTO type 정보가 사라지면 안 된다.
+
+---
+
+13. Swagger Endpoint 자체는 wrapping하지 않음
+
+다음 endpoint는 ApiResponse로 감싸면 안 된다.
+
+/swagger-ui/**
+/swagger-ui.html
+/v3/api-docs/**
+
+Swagger JSON 자체를 다음처럼 만들어버리는 문제가 발생하면 안 된다.
+
+{
+  "status": 200,
+  "data": {
+    "openapi": "3.0.1",
+    ...
+  }
+}
+
+Swagger/OpenAPI endpoint는 기존 형식을 유지한다.
+
+---
+
+14. 존재하지 않는 URL
+
+존재하지 않는 API를 호출했을 때 Spring Boot 기본 HTML 또는 기본 error JSON이 노출되지 않도록 현재 설정을 확인한다.
+
+가능하다면 다음과 같은 표준 JSON으로 처리한다.
+
+HTTP/1.1 404 Not Found
+
+{
+  "status": 404,
+  "timestamp": "2026-10-02T00:30:15Z",
+  "msg": "Not Found",
+  "data": null
+}
+
+Spring Boot 버전에 따라 404 처리 방식이 다를 수 있으므로 현재 버전에 맞는 방법을 사용한다.
+
+---
+
+15. 로그 처리
+
+예상하지 못한 서버 오류는 반드시 로그를 남긴다.
+
+예:
+
+500 unexpected exception
+request method
+request URI
+exception stack trace
+
+그러나 client response에는 stack trace를 포함하지 않는다.
+
+Validation, 404 등 클라이언트 오류를 모두 ERROR stack trace로 남겨 로그를 오염시키지 않는다.
+
+예상 가능한 4xx와 예상하지 못한 5xx의 log level을 적절히 구분한다.
+
+현재 프로젝트에 requestId, traceId, MDC, OpenTelemetry 등이 이미 있다면 해당 정보를 유지한다.
+
+---
+
+16. 테스트 작성
+
+구현 후 최소한 다음 케이스를 자동 테스트한다.
+
+정상 200
+
+검증:
+
+{
+  "status": 200,
+  "timestamp": "...Z",
+  "msg": "...",
+  "data": ...
+}
+
+- HTTP status = body.status
+- timestamp UTC format 검증
+- data 정상 포함
+
+201 ResponseEntity
+
+- HTTP 201
+- body.status == 201
+- 기존 ResponseEntity header 유지
+- data wrapping 확인
+
+Validation 실패
+
+- HTTP 400
+- body.status == 400
+- 동일 envelope
+- validation error가 data에 구조화되어 있는지 확인
+
+JSON parsing 실패
+
+잘못된 JSON request 전송 시:
+
+- HTTP 400
+- Spring 기본 오류가 아니라 표준 ApiResponse 반환
+
+Business Exception
+
+- 설정된 HTTP status 반환
+- 표준 ApiResponse 반환
+
+예상하지 못한 Exception
+
+- HTTP 500
+- 표준 ApiResponse 반환
+- stack trace가 response에 포함되지 않음
+
+없는 API
+
+- HTTP 404
+- 표준 ApiResponse 반환
+
+Swagger
+
+- "/v3/api-docs"가 ApiResponse로 wrapping되지 않을 것
+- Swagger UI 정상 동작
+
+Double wrapping 방지
+
+이미 ApiResponse인 응답:
+
+ApiResponse<JobResponse>
+
+이 다음처럼 되지 않을 것.
+
+{
+  "data": {
+    "status": 200,
+    "data": {}
+  }
+}
+
+---
+
+17. 구현 시 주의사항
+
+다음 구현은 피한다.
+
+Controller마다 반복
+
+return ApiResponse.success(...);
+
+를 모든 Controller에 무조건 반복해서 넣는 구조.
+
+JSON 문자열 직접 조립
+
+"{\"status\":" + status + ...`
+
+금지.
+
+Jackson과 DTO를 사용한다.
+
+Exception message 외부 노출
+
+catch (Exception e) {
+    response.setMsg(e.getMessage());
+}
+
+와 같이 예상하지 못한 내부 exception message를 그대로 응답하지 않는다.
+
+모든 실패를 HTTP 200으로 응답
+
+금지.
+
+Filter에서 무조건 body 문자열을 parsing 후 재serialize
+
+Spring 표준 확장 지점으로 해결할 수 있는데도 모든 응답을 ContentCachingResponseWrapper 등으로 복잡하게 재가공하는 방식은 피한다.
+
+정말 Filter body wrapping이 필요한 구조라면 왜 필요한지 설명하고 Content-Type, encoding, header, streaming, Swagger 등에 문제가 없는지 테스트한다.
+
+---
+
+18. 기대 package 구조 예시
+
+현재 프로젝트의 package convention이 다르면 기존 구조를 우선한다.
+
+개념적으로는 다음과 같이 구성할 수 있다.
+
+common
+ ├── api
+ │    ├── ApiResponse.java
+ │    └── DefaultMessageResolver.java
+ │
+ ├── exception
+ │    ├── BusinessException.java
+ │    ├── ErrorCode.java
+ │    └── GlobalExceptionHandler.java
+ │
+ ├── filter
+ │    └── ErrorHandlingFilter.java
+ │
+ └── config
+      └── OpenApiConfig.java
+
+DTO는 각 domain에 위치시킨다.
+
+예:
+
+job
+ └── dto
+      ├── JobRequest.java
+      ├── JobResponse.java
+      └── JobStatusResponse.java
+
+---
+
+19. 구현 결과 보고
+
+코드 수정이 끝나면 단순히 "구현했습니다"라고 답하지 말고 아래 형식으로 결과를 정리한다.
+
+1. 현재 구조 분석 결과
+
+- Spring Boot version
+- Java version
+- Swagger library/version
+- 기존 응답 방식
+- 기존 예외 처리 방식
+
+2. 변경 파일
+
+각 파일별 역할을 한 줄씩 설명한다.
+
+예:
+
+ApiResponse.java
+- Python analysis API와 동일한 공통 Response Envelope
+
+GlobalExceptionHandler.java
+- Spring MVC validation/business exception 표준화
+
+ErrorHandlingFilter.java
+- 처리되지 않은 공통 서버 오류 처리
+
+OpenApiConfig.java
+- Swagger 공통 응답 Schema 설정
+
+3. 정상 응답 예시
+
+실제 구현 결과 JSON을 보여준다.
+
+4. 오류 응답 예시
+
+400 / 404 / 500 예시를 보여준다.
+
+5. Swagger 변경 내용
+
+Swagger에 어떻게 노출되는지 설명한다.
+
+6. 테스트 결과
+
+실행한 테스트 명령과 성공/실패 결과를 작성한다.
+
+7. 기술적 판단
+
+상위 요구사항의 "by filter"를 실제 코드에서 어떻게 해석했는지 설명한다.
+
+예:
+
+Error handling은 OncePerRequestFilter에서 수행하고,
+정상 Controller Response wrapping은 Spring MVC의 ResponseBodyAdvice를 사용했다.
+
+정상 응답까지 Servlet Filter에서 JSON 문자열로 재가공할 경우
+ResponseEntity/Streaming/Swagger/Jackson 처리에 영향을 줄 가능성이 있기 때문에
+Spring MVC extension point를 사용했다.
+
+반대로 실제로 Filter 하나로 안전하게 구현했다면 그 이유를 설명한다.
+
+---
+
+20. 최종 목표
+
+클라이언트가 어떤 API를 호출하더라도 일반적인 JSON API에서는 다음 계약을 기대할 수 있어야 한다.
+
+정상:
+
+{
+  "status": 200,
+  "timestamp": "2026-10-02T00:30:15Z",
+  "msg": "Success",
+  "data": {
+    ...
+  }
+}
+
+오류:
+
+{
+  "status": 400,
+  "timestamp": "2026-10-02T00:30:15Z",
+  "msg": "Bad Request",
+  "data": {
+    ...
+  }
+}
+
+또는:
+
+{
+  "status": 500,
+  "timestamp": "2026-10-02T00:30:15Z",
+  "msg": "Internal Server Error",
+  "data": null
+}
+
+Python Analysis 애플리케이션과 Spring Boot WAS 사이에서 "status / timestamp / msg / data"라는 동일한 API Response Contract를 유지하는 것이 가장 중요한 목표다.
+
+현재 코드를 먼저 분석한 뒤 위 요구사항에 맞게 실제 코드를 수정하고 테스트까지 수행하라.
