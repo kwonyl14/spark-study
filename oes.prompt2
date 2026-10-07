@@ -1,0 +1,928 @@
+OES Summary 기능 추가 개발
+
+0. 집계 키 / 테이블 정의
+
+아래 키 정의를 기준으로 구현하라.
+
+SUMMARY_KEY_COLUMNS = [
+  "fab",
+  "eqp",
+  "lot_id",
+  "slot_id",
+  "chamber",
+  "recipe",
+  "step_id"
+]
+
+중요:
+
+- 위 이름은 최종 결과 테이블 기준 논리 컬럼명이다.
+- 원천 파일 컬럼명, 기존 Scala DTO 필드명, Java Parser 변수명은 다를 수 있다.
+- 실제 코드를 확인하여 다음 매핑을 먼저 파악한 뒤 구현하라.
+
+최종 결과 컬럼
+→ 원천 데이터 필드
+→ Java Parser 변수/getter
+→ Scala Dataset/DTO 필드
+
+추측해서 컬럼명을 연결하지 마라.
+
+대상 테이블:
+
+원본:
+iceberg.sep.oes_data_stream
+
+신규 Summary:
+iceberg.sep.oes_summary_inf
+
+---
+
+1. 신규 Iceberg 테이블 DDL
+
+아래 스키마를 기준으로 신규 테이블을 사용한다.
+
+CREATE TABLE iceberg.sep.oes_summary_inf (
+    fab                 STRING,
+    eqp                 STRING,
+    lot_id              STRING,
+    slot_id             STRING,
+    chamber             STRING,
+    recipe              STRING,
+    step_id             STRING,
+
+    wl_group            INT,
+    wl_group_cnt        BIGINT,
+
+    avg_value_array     ARRAY<DOUBLE>,
+    value_std           DOUBLE,
+    value_min           DOUBLE,
+    value_max           DOUBLE,
+    value_mean          DOUBLE,
+    value_median        DOUBLE,
+
+    source_file_key     STRING,
+    summary_status      STRING,
+
+    dt                  DATE
+)
+USING iceberg
+PARTITIONED BY (dt, fab);
+
+컬럼 의미:
+
+wl_group
+- floor(wave_length)
+- 예:
+  192.343243 → 192
+  192.234143 → 192
+  191.123123 → 191
+
+wl_group_cnt
+- 해당 SUMMARY_KEY_COLUMNS + wl_group 그룹에 포함된 원본 wave_length row 개수
+
+avg_value_array
+- 같은 그룹의 value 배열들을 같은 index끼리 평균 낸 배열
+
+value_std
+value_min
+value_max
+value_mean
+value_median
+- avg_value_array 자체를 대상으로 계산한 통계값
+
+source_file_key
+- 기존 oes_data_stream의 파일 식별 컬럼인 key에 대응하는 값
+- Summary 테이블에서는 의미를 명확히 하기 위해 source_file_key라는 이름으로 저장
+
+summary_status
+- 해당 summary row의 계산 상태
+- 정상: SUCCESS
+- 배열 길이 불일치: INVALID_ARRAY_LENGTH
+- 숫자 파싱 실패 등 필요한 경우 별도 상태 코드 사용
+
+dt
+- 기존 OES 데이터의 날짜 기준을 확인하여 동일한 의미로 사용
+- 처리 실행일을 임의로 사용하지 마라
+
+---
+
+2. 현재 Spark 처리 구조
+
+현재 애플리케이션은 대략 다음 구조다.
+
+val successDs: Dataset[OesRawData] =
+  spark
+    .createDataFrame(repartitionedRdd, schema)
+    .as[LogFileMeta]
+    .mapPartitions { partition =>
+      // Executor에서
+      // 파일 다운로드
+      // Java Parser 실행
+      // OesRawData 반환
+    }
+
+이후 기존 컬럼 가공 및 조인을 수행하여 "wholeDF"를 만든다.
+
+최종적으로 현재는 아래 형태로 원본 Iceberg 테이블에 적재하고 있다.
+
+wholeDF =>
+
+  withCached(
+    wholeDF
+      .select(WAFER_HIS_KEY_MAP: _*)
+      .dropDuplicates()
+  ) { waferHistoryDF =>
+
+    val loader = Try {
+      wholeDF
+        .writeTo(icebergConf.fullName)
+        .append()
+    }
+
+    loader match {
+
+      case Success(_) =>
+        // DB 상태 FINISHED 처리
+
+      case Failure(e) =>
+        // DB 실패 상태
+        // 실패 메시지 저장
+    }
+  }
+
+"icebergConf.fullName"은 현재 "iceberg.sep.oes_data_stream"에 해당한다.
+
+기존 원본 처리 로직을 최대한 유지하면서 Summary 기능을 추가하라.
+
+---
+
+3. 가장 중요한 집계 전제
+
+Summary 계산은 Spark의 최종 "wholeDF"를 다시 groupBy 해서 만들지 않는다.
+
+아래 조건이 보장된다.
+
+하나의 Summary 집계 그룹은 반드시 하나의 원본 파일 안에서 완성된다.
+
+같은
+SUMMARY_KEY_COLUMNS + wl_group
+
+조합이 여러 파일에 걸쳐 나누어 들어오는 경우는 없다.
+
+따라서 Summary 계산은 Executor에서 파일을 다운로드하고 Java Parser로 파싱하는 시점에 파일 단위로 수행하라.
+
+다음과 같은 전역 집계는 추가하지 마라.
+
+wholeDF.groupBy(...)
+groupByKey
+reduceByKey
+posexplode 후 재집계
+Iceberg 원본 재조회 후 집계
+
+Summary 기능 때문에 원본 전체 Dataset에 추가적인 대규모 shuffle을 발생시키지 않는 것이 중요한 목표다.
+
+---
+
+4. Summary 계산 규칙
+
+예를 들어 동일한 업무 키에 다음 데이터가 있다고 하자.
+
+wave_length = 192.343243
+value       = "1,2,3,4,5"
+
+wave_length = 192.234143
+value       = "2,3,4,5,6"
+
+두 행 모두:
+
+wl_group = 192
+
+이다.
+
+value 문자열을 숫자 배열로 파싱하면:
+
+[1,2,3,4,5]
+[2,3,4,5,6]
+
+같은 index끼리 평균한다.
+
+avg_value_array =
+[1.5, 2.5, 3.5, 4.5, 5.5]
+
+그 후 avg_value_array 하나를 대상으로 다음 통계를 계산한다.
+
+value_std
+value_min
+value_max
+value_mean
+value_median
+
+예시 결과:
+
+avg_value_array = [1.5, 2.5, 3.5, 4.5, 5.5]
+value_std        ≈ 1.414213562
+value_min        = 1.5
+value_max        = 5.5
+value_mean       = 3.5
+value_median     = 3.5
+wl_group_cnt     = 2
+summary_status   = SUCCESS
+
+"value_std"는 모집단 표준편차 기준으로 구현한다.
+
+분모 = N
+
+배열 길이가 1이면:
+
+value_std = 0
+
+median:
+
+- 홀수 길이: 가운데 값
+- 짝수 길이: 가운데 두 값의 평균
+- median 계산을 위해 정렬하더라도 "avg_value_array" 자체의 원래 순서를 변경하지 마라.
+
+---
+
+5. 배열 길이 불일치 처리
+
+같은 Summary 그룹 안에 들어오는 모든 value 배열은 길이가 동일해야 한다.
+
+예:
+
+192.343 → [1,2,3,4,5]
+192.234 → [2,3,4]
+
+이 경우 Summary 계산을 정상 수행하면 안 된다.
+
+금지:
+
+0 padding
+NULL padding
+긴 배열 truncate
+짧은 배열 기준 truncate
+존재하는 index만 부분 평균
+문제 있는 row만 제외하고 정상 row로 평균
+
+그 그룹은 다음과 같이 저장한다.
+
+업무 Key         → 정상 저장
+wl_group         → 정상 저장
+wl_group_cnt     → 실제 해당 그룹의 row 개수 저장
+source_file_key  → 정상 저장
+dt               → 정상 저장
+
+avg_value_array  → NULL
+value_std        → NULL
+value_min        → NULL
+value_max        → NULL
+value_mean       → NULL
+value_median     → NULL
+
+summary_status   → INVALID_ARRAY_LENGTH
+
+NULL은 실제 SQL NULL이어야 한다.
+
+다음을 사용하지 마라.
+
+[]
+"null"
+NaN
+0
+
+---
+
+6. value 파싱 오류 처리
+
+다음과 같은 경우도 정상값만 제외하고 계산하지 마라.
+
+NULL value
+빈 문자열
+숫자가 아닌 값
+NaN
+Infinity
+CSV token 파싱 실패
+
+해당 그룹 전체를 실패 처리한다.
+
+예:
+
+summary_status = INVALID_VALUE
+
+또는 기존 프로젝트의 오류 코드 규칙이 있다면 그 규칙을 따른다.
+
+잘못된 token을 제거해서 배열 index가 당겨지면 안 된다.
+
+예:
+
+"1,,3"
+
+을
+
+[1,3]
+
+으로 만들어서는 안 된다.
+
+원래 배열 위치 의미를 유지해야 한다.
+
+---
+
+7. Executor 내 집계 구조
+
+파일 하나를 처리할 때 Summary용 Map을 유지한다.
+
+개념적으로:
+
+Map[
+  SummaryKey,
+  SummaryAccumulator
+]
+
+SummaryKey:
+
+fab
+eqp
+lot_id
+slot_id
+chamber
+recipe
+step_id
+wl_group
+
+필요하다면 파일 식별을 위해 내부적으로 "source_file_key"도 함께 유지한다.
+
+Accumulator는 최소한 다음 정보를 가진다.
+
+expectedArrayLength
+sumArray
+rowCount
+invalid
+invalidReason
+
+정상 그룹의 경우:
+
+sumArray[i] += valueArray[i]
+rowCount += 1
+
+파일 파싱 종료 시:
+
+avg_value_array[i] =
+sumArray[i] / rowCount
+
+을 계산한다.
+
+그 후 통계값 5개를 계산하여 "OesSummaryData"를 만든다.
+
+배열 길이가 동일해야 하므로 위치별 "countArray"는 필요하지 않다.
+
+---
+
+8. 파일 단위로 버퍼를 분리
+
+SummaryAccumulator는 반드시 파일 단위로 관리한다.
+
+예:
+
+파일 A 처리 시작
+→ Summary Map 생성
+→ 파일 A 파싱
+→ Summary 생성
+→ Map 종료
+
+파일 B 처리 시작
+→ 새로운 Summary Map 생성
+
+Executor JVM 전체에서 공유하는 static/global mutable Map을 만들지 마라.
+
+서로 다른 파일의 Summary 데이터가 섞이면 안 된다.
+
+또한 같은 그룹의 행이 파일 안에서 연속해서 존재한다고 가정하지 마라.
+
+예:
+
+192 group
+191 group
+192 group
+190 group
+192 group
+
+형태라도 하나의 192 그룹으로 정상 집계되어야 한다.
+
+---
+
+9. 파싱은 한 번만 수행
+
+Summary 때문에 기존 원본 파일을 두 번 파싱하지 마라.
+
+잘못된 구조:
+
+파일 다운로드
+→ 원본 파싱
+
+같은 파일 다시 다운로드
+→ Summary 파싱
+
+원하는 구조:
+
+파일 다운로드
+        ↓
+Java Parser 한 번
+        ↓
+원본 OesRawData 생성
++
+SummaryAccumulator 갱신
+
+기존 value 문자열을 숫자 배열로 파싱하는 코드가 이미 있다면 가능한 범위에서 재사용한다.
+
+Summary 계산 때문에 같은 문자열을 불필요하게 반복 split/parse 하지 마라.
+
+---
+
+10. Spark Dataset 반환 구조
+
+현재 "Dataset[OesRawData]"만 반환하는 구조를 확장해야 한다.
+
+원본과 Summary 결과를 하나의 공통 파싱 결과로 반환하고, 이후 두 Dataset으로 분리하는 구조를 우선 검토하라.
+
+개념 예시:
+
+case class OesParsedOutput(
+  raw: Option[OesRawData],
+  summary: Option[OesSummaryData]
+)
+
+실제 프로젝트의 Encoder/Java Bean 구조에 맞게 구현 방식은 조정 가능하다.
+
+개념적으로 Dataset은 다음과 같이 생성된다.
+
+raw                                      summary
+
+OesRawData #1                            null
+OesRawData #2                            null
+OesRawData #3                            null
+...
+null                                     OesSummaryData #1
+null                                     OesSummaryData #2
+...
+
+그 후 공통 결과를 persist/cache 하고:
+
+cachedParsedDs
+    ├─ raw 결과 추출
+    │    ↓
+    │  기존 successDs 역할
+    │    ↓
+    │  기존 컬럼 가공 / 조인
+    │    ↓
+    │  wholeDF
+    │
+    └─ summary 결과 추출
+         ↓
+       summaryDF
+
+구조로 분기한다.
+
+Summary 계산 결과를 모든 Raw Row에 중복해서 붙이지 마라.
+
+---
+
+11. Cache / Persist 구조 확인
+
+현재:
+
+withCached(
+  wholeDF
+    .select(WAFER_HIS_KEY_MAP: _*)
+    .dropDuplicates()
+)
+
+은 waferHistoryDF용 캐시다.
+
+이 캐시만으로 파일 다운로드와 Java Parser 실행이 원본/summary 양쪽에서 재실행되지 않는다고 가정하지 마라.
+
+실제 Spark lineage를 확인하여:
+
+파일 다운로드
+Java Parser
+Summary 계산
+
+까지 포함하는 공통 결과가 원본 및 Summary write에서 재사용되도록 적절한 persist/cache 위치를 정하라.
+
+목표:
+
+하나의 정상 배치에서
+같은 파일을 Summary 때문에 다시 다운로드하지 않음
+같은 Java Parser를 Summary 때문에 다시 실행하지 않음
+
+불필요한 "count()" 등 캐시 강제용 액션은 추가하지 마라.
+
+캐시는 반드시 finally 등의 방식으로 정상 해제되도록 한다.
+
+---
+
+12. 원본 Iceberg 적재
+
+기존 원본 적재 방식은 유지한다.
+
+wholeDF
+  .writeTo(icebergConf.fullName)
+  .append()
+
+현재 "icebergConf.fullName"은:
+
+iceberg.sep.oes_data_stream
+
+에 해당한다.
+
+Summary 기능 추가 때문에 원본 테이블 스키마나 기존 데이터 의미를 변경하지 마라.
+
+---
+
+13. Summary Iceberg 적재
+
+파싱 시점에 이미 만들어진 "summaryDF"를 그대로 신규 테이블에 append 한다.
+
+summaryDF
+  .writeTo("iceberg.sep.oes_summary_inf")
+  .append()
+
+Summary 적재 시 다시 groupBy 하지 마라.
+
+Summary row는:
+
+SUMMARY_KEY_COLUMNS + wl_group
+
+당 1 row
+
+여야 한다.
+
+---
+
+14. DB 상태 처리 변경
+
+현재는 원본 Iceberg write 성공 시 바로 DB 상태를 "FINISHED"로 변경하고 있다.
+
+이 동작을 변경한다.
+
+기존:
+
+원본 저장 성공
+→ FINISHED
+
+변경:
+
+원본 저장
+    ↓
+원본 저장 성공
+    ↓
+중간 상태 저장
+    ↓
+Summary 저장
+    ↓
+최종 상태 결정
+
+상태명은 실제 프로젝트의 기존 enum / DB 컬럼 정책을 확인하고 적용하라.
+
+논리적으로는:
+
+RAW_SAVED
+SUMMARY_FAILED
+FINISHED
+
+정도가 필요하다.
+
+---
+
+15. 상태 전이
+
+원본 저장 실패
+
+oes_data_stream write 실패
+→ 기존 원본 실패 상태
+→ 기존 실패 메시지 저장
+→ Summary write 수행하지 않음
+
+원본 성공 + Summary write 성공 + 모든 그룹 정상
+
+RAW_SAVED
+→ summary append 성공
+→ FINISHED
+
+원본 성공 + Summary 데이터 검증 실패 그룹 존재
+
+예:
+
+INVALID_ARRAY_LENGTH
+INVALID_VALUE
+
+Summary 테이블에는 해당 그룹을 NULL 통계 row로 정상 저장한다.
+
+DB 상태는:
+
+SUMMARY_FAILED
+
+로 관리한다.
+
+실패 원인도 기존 DB 실패 메시지 컬럼에 기록한다.
+
+예:
+
+INVALID_ARRAY_LENGTH
+source_file_key=...
+wl_group=192
+expected_length=500
+actual_length=499
+
+단, 전체 value 배열을 로그나 DB 실패 메시지에 그대로 저장하지 마라.
+
+원본 성공 + Summary Iceberg write 자체 실패
+
+원본 데이터는 이미 저장된 상태 유지
+DB 상태 = SUMMARY_FAILED
+실패 원인 = SUMMARY_WRITE_ERROR + 예외 메시지
+
+원본 실패 상태로 되돌리지 마라.
+
+---
+
+16. 중요한 상태 처리 주의사항
+
+기존:
+
+case Success(_) =>
+  FINISHED
+
+를 원본 write 직후 그대로 사용하지 마라.
+
+"FINISHED"는 다음이 모두 만족된 경우에만 사용한다.
+
+원본 Iceberg 저장 성공
+Summary Iceberg 저장 성공
+Summary 데이터 검증 성공
+
+또한 기존 배치 대상 조회가 예를 들어:
+
+status != 'FINISHED'
+
+처럼 되어 있다면 반드시 확인하라.
+
+"SUMMARY_FAILED" 데이터가 기존 원본 배치 대상에 다시 들어가서:
+
+원본 다운로드
+원본 재파싱
+oes_data_stream 재append
+
+되는 문제가 발생하면 안 된다.
+
+Summary recovery batch는 추후 별도로 구현할 예정이므로 이번 작업에서는 구현하지 않는다.
+
+단, 기존 처리 대상 조회 조건이 Summary 실패 상태 때문에 원본을 재처리하는 구조라면 그 부분은 반드시 방지한다.
+
+---
+
+17. source_file_key
+
+기존 원본 테이블에는 파일을 식별하는 "key" 컬럼이 있다.
+
+Summary에서는 의미를 명확히 하기 위해:
+
+oes_data_stream.key
+→
+oes_summary_inf.source_file_key
+
+형태로 저장한다.
+
+source_file_key를 새로 생성하지 마라.
+
+기존 원본 파일 식별 값을 그대로 사용한다.
+
+---
+
+18. wl_group_cnt
+
+"wl_group_cnt"는 해당 Summary 결과를 만들 때 사용된 원본 wave_length row 개수다.
+
+예:
+
+192.343
+192.234
+192.112
+
+세 개가 같은 그룹이라면:
+
+wl_group     = 192
+wl_group_cnt = 3
+
+배열 길이 불일치 등으로 Summary 계산이 실패했더라도:
+
+wl_group_cnt
+
+는 실제 그룹에 속한 원본 row 수를 저장한다.
+
+예:
+
+192.343 → length 5
+192.234 → length 4
+192.112 → length 5
+
+결과:
+
+wl_group        = 192
+wl_group_cnt    = 3
+
+avg_value_array = NULL
+value_std       = NULL
+value_min       = NULL
+value_max       = NULL
+value_mean      = NULL
+value_median    = NULL
+
+summary_status  = INVALID_ARRAY_LENGTH
+
+---
+
+19. 기존 데이터 필터 / Join과 Summary 입력 일치
+
+기존 "successDs" 이후 "wholeDF"까지 만들어지는 과정에서:
+
+필터
+유효성 검사
+컬럼 변환
+Join
+dropDuplicates
+
+등이 존재하는지 확인하라.
+
+Summary 계산은 Executor 파싱 단계에서 수행되므로,
+최종 원본 테이블에는 저장되지 않을 row가 Summary에 포함되는 상황이 없는지 반드시 검토하라.
+
+특히:
+
+파싱 성공
+→ 이후 필터에서 원본 제외
+
+되는 데이터가 있다면 Summary 포함 여부가 기존 원본 의미와 달라질 수 있다.
+
+이 경우 실제 코드를 분석해서 Summary 입력 조건을 원본 데이터 의미와 맞춰라.
+
+후단 Join이 단순 metadata enrich라면 가능한 범위에서 Parser 단계의 기존 메타데이터를 활용하라.
+
+행마다 DB 조회나 외부 조회를 새로 추가하지 마라.
+
+---
+
+20. 테스트
+
+최소한 다음 케이스를 테스트하라.
+
+정상 평균
+
+입력:
+
+wl=192.343 / [1,2,3,4,5]
+wl=192.234 / [2,3,4,5,6]
+
+결과:
+
+wl_group        = 192
+wl_group_cnt    = 2
+avg_value_array = [1.5,2.5,3.5,4.5,5.5]
+value_min       = 1.5
+value_max       = 5.5
+value_mean      = 3.5
+value_median    = 3.5
+value_std       ≈ 1.414213562
+summary_status  = SUCCESS
+
+서로 다른 그룹
+
+192.xx
+191.xx
+190.xx
+
+각 그룹이 독립된 Summary row를 생성하는지 확인.
+
+그룹 row 순서가 섞임
+
+192
+191
+192
+190
+192
+
+라도 192 그룹 하나로 정상 집계되는지 확인.
+
+배열 길이 불일치
+
+같은 그룹:
+
+[1,2,3,4,5]
+[2,3,4]
+
+결과:
+
+wl_group_cnt = 2
+
+avg_value_array = NULL
+통계 5개 = NULL
+
+summary_status = INVALID_ARRAY_LENGTH
+
+서로 다른 그룹의 배열 길이가 다름
+
+wl_group=192 → length 100
+wl_group=191 → length 200
+
+은 정상이다.
+
+그룹 내부 길이만 동일하면 된다.
+
+숫자 파싱 실패
+
+"1,2,abc,4"
+
+등의 경우 정상값만 제외하고 평균하지 말고 그룹 실패 처리.
+
+음수 / 소수
+
+정확하게 계산되는지 확인.
+
+median
+
+홀수 길이
+짝수 길이
+길이 1
+
+모두 확인.
+
+파일 간 상태 격리
+
+같은 Executor가 여러 파일을 연속 처리하더라도 SummaryAccumulator가 파일 간 섞이지 않는지 확인.
+
+Spark 처리
+
+Summary 기능 추가로:
+
+같은 파일 재다운로드
+같은 Java Parser 재실행
+원본 배열 대상 global groupBy
+
+가 발생하지 않는지 확인.
+
+저장 상태
+
+다음 케이스 확인:
+
+원본 실패
+원본 성공 + Summary 성공
+원본 성공 + Summary validation 실패
+원본 성공 + Summary write 실패
+
+각각 DB 상태가 의도대로 변경되는지 확인.
+
+---
+
+21. 구현 시 하지 말아야 할 것
+
+다음을 하지 마라.
+
+Summary 계산을 위해 wholeDF 전체 groupBy
+Iceberg 원본 재조회 후 Summary 생성
+Summary 때문에 파일 재다운로드
+Summary 때문에 Java Parser 재실행
+Executor에서 직접 Iceberg write
+Executor에서 직접 DB 상태 변경
+Accumulator를 업무 결과 전달 수단으로 사용
+배열 길이 자동 보정
+실패 row 제거
+NULL 대신 0 / NaN / 빈 배열 저장
+기존 원본 처리 의미 변경
+불필요한 대규모 리팩터링
+Recovery Batch 구현
+
+---
+
+22. 작업 완료 후 보고
+
+구현 완료 후 다음 내용을 정리해서 보고하라.
+
+1. 변경 파일 목록
+2. 실제 Spark / Scala / Iceberg 버전
+3. Summary Key 매핑
+
+최종 컬럼
+→ 원천 필드
+→ Java Parser 변수
+→ Scala DTO 필드
+
+4. "wave_length", "value", "source_file_key", "dt" 매핑
+5. Executor 집계 구현 방식
+6. Raw/Summary Dataset 분기 구조
+7. persist/cache 위치와 이유
+8. DB 상태 전이 변경
+9. "oes_summary_inf" DDL
+10. 실행한 테스트와 결과
+11. 실제 실행하지 못한 테스트
+12. 아직 남은 복구/중복 위험
+
+코드로 확인하지 못한 내용을 추측해서 완료했다고 보고하지 마라.
